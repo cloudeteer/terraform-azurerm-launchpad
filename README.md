@@ -29,9 +29,8 @@ module "example" {
 
 | Name | Version |
 |------|---------|
-| azuread | n/a |
 | azurerm | ~> 3.111.0 |
-| random | n/a |
+| random | ~> 3.6.0 |
 
 ## Modules
 
@@ -63,7 +62,6 @@ No modules.
 | [random_password.vmss_launchpad_prd_azureadmin_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [random_string.kvlaunchpadprd_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
 | [random_string.stlaunchpadprd_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
-| [azuread_user.current_user](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/data-sources/user) | data source |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.id_launchpad_prd_mg_scope](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/management_group) | data source |
 

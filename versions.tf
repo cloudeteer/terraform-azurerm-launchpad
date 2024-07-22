@@ -7,3 +7,11 @@ terraform {
     }
   }
 }
+
+provider "random" {
+  version = "~> 3.6.0"
+}
+
+provider "azuread" {
+  version = "~> 2.53"
+}
