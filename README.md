@@ -82,6 +82,7 @@ No modules.
 | runner\_github\_pat | GitHub PAT that will be used to register GitHub Action Runner tokens | `string` | n/a | yes |
 | runner\_github\_repo | Specify the GitHub repository owner and name seperated by `/` to register the action runner. e.g. `cloudeteer/squad-customer` | `string` | n/a | yes |
 | runner\_public\_ip\_address | Set the value of this variable to `true` if you want to allocate a public IP address to each instance within the Virtual Machine Scale Set. Enabling this option may be necessary to establish internet access when a direct connection to a HUB is currently unavailable. | `bool` | `false` | no |
+| runner\_user | An unprivileged user to run the Runner application. If this user does not exist on the system, a new user will be created. | `string` | `"actions-runner"` | no |
 | runner\_version | Set a specific GitHub action runner version (without the `v` in the version string) or use `latest`. | `string` | `"latest"` | no |
 | snet\_address\_prefixes | n/a | `list(string)` | n/a | yes |
 | vnet\_address\_space | n/a | `list(string)` | n/a | yes |
