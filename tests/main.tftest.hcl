@@ -1,25 +1,23 @@
 variables {
-  example_variable = "example value"
+  runner_github_pat = "ehifeoifehoiehoce"
+  runner_github_repo = "cloudeteer/squad-customer"
+  vnet_address_space    = ["192.168.0.0/24"]
+  snet_address_prefixes = ["192.168.0.0/24"]
+  location              = "germanywestcentral"
+  resource_group_name = "rg-lets-launch"
+}
+provider "azurerm" {
+  features {}
 }
 
 run "test_input_validation" {
   command = plan
 
-  variables {
-    example_variable = "ex"
-  }
-
-  # https://developer.hashicorp.com/terraform/language/tests#expecting-failures
-  expect_failures = [
-    var.example_variable,
-  ]
-}
-
-run "test_output" {
-  command = plan
-
   assert {
-    condition     = output.example_output == "example value"
-    error_message = "Output example_output not equal to expected value"
+    condition = azurerm_virtual_network.vnet_launchpad_prd.address_space[0] == "192.168.0.0/24"
+    error_message = "The VNET has an issue"
   }
+
 }
+
+
