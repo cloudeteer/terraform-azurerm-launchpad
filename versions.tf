@@ -5,13 +5,13 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.111.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6.0"
+    }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "~> 2.53"
+    }
   }
-}
-
-provider "random" {
-  version = "~> 3.6.0"
-}
-
-provider "azuread" {
-  version = "~> 2.53"
 }
