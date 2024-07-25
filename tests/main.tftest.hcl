@@ -19,5 +19,3 @@ run "test_input_validation" {
   }
 
 }
-
-
