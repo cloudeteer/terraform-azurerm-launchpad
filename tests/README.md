@@ -30,9 +30,12 @@ terraform test -test-directory=tests/local
 
 ## `./remote`
 
-This directory contains tests designed to be executed by CI/CD pipelines. Use the following commands to initialize and run the tests:
+This directory contains tests designed to be executed by CI/CD pipelines.
+To test this locally, you need to set the `ARM_SUBSCRIPTION_ID` variable because the tests actually provision real resources on Azure.
+Use the following commands to initialize and run the tests:
 
 ```shell
+export ARM_SUBSCRIPTION_ID=00000000-0000-0000-0000-000000000000
 terraform init -test-directory=tests/remote
 terraform test -test-directory=tests/remote
 ```

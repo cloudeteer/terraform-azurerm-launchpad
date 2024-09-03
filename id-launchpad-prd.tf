@@ -35,10 +35,6 @@ resource "azurerm_role_assignment" "mg_owner" {
 
 resource "azurerm_role_assignment" "this" {
   for_each = {
-    owner = {
-      scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
-      role_definition_name = "Owner"
-    },
     storage_blob_owner = {
       role_definition_name = "Storage Blob Data Owner"
       scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
@@ -53,5 +49,3 @@ resource "azurerm_role_assignment" "this" {
   scope                = each.value.scope
   role_definition_name = each.value.role_definition_name
 }
-
-

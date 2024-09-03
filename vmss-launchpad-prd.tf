@@ -1,5 +1,5 @@
 locals {
-  admin_username = "azureadmin"
+  admin_username       = "azureadmin"
   github_runner_script = base64gzip(templatefile("assets/install_github_actions_runner.sh.tftpl", {
     key_vault_hostname                  = "${azurerm_key_vault.this.name}.vault.azure.net"
     private_endpoint_key_vault_ip       = one(azurerm_private_endpoint.pe_kvlaunchpadprd_prd.private_service_connection[*].private_ip_address)
@@ -55,7 +55,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "vmss_launchpad_prd" {
   upgrade_mode                 = "Automatic"
   secure_boot_enabled          = false
   vtpm_enabled                 = false
-  overprovision                = true
+  overprovision = true
 
   # trigger instance update
   custom_data = base64encode("#cloud-config\n#${sha256(local.github_runner_script)}")
