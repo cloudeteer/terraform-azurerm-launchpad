@@ -22,11 +22,27 @@ resource "azurerm_resource_group" "example" {
   name     = "example-resource-group"
 }
 
+resource "azurerm_virtual_network" "example" {
+  name                = "vnet-example-dev-we-01"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+
+  address_space = ["10.0.0.0/16"]
+}
+
+resource "azurerm_subnet" "example" {
+  name                = "snet-example-dev-we-01"
+  resource_group_name = azurerm_resource_group.example.name
+
+  address_prefixes     = ["10.0.2.0/24"]
+  virtual_network_name = azurerm_virtual_network.example.name
+}
+
 module "example" {
   source                = "cloudeteer/launchpad/azurerm"
   github_pat            = "justRandomChars"
-  vnet_address_space    = ["192.168.0.0/24"]
-  snet_address_prefixes = ["192.168.0.0/24"]
+  vnet_address_space    = azurerm_virtual_network.example.address_space[0]
+  snet_address_prefixes = azurerm_subnet.example.address_prefixes[0]
   resource_group_name   = azurerm_resource_group.example.name
   location              = azurerm_resource_group.example.location
   management_groups     = ["mg-cdt"]
@@ -69,7 +85,6 @@ No modules.
 | [random_string.kvlaunchpadprd_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
 | [random_string.stlaunchpadprd_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
-| [azurerm_management_group.id_launchpad_prd_mg_scope](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.mg_owner](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/management_group) | data source |
 
 ## Inputs
