@@ -8,7 +8,7 @@ resource "azurerm_storage_account" "this" {
   name                = "stlaunchpadprd${local.location_short[var.location]}${random_string.stlaunchpadprd_suffix.result}"
   location            = var.location
   resource_group_name = var.resource_group_name
-  tags                = local.tags
+  tags                = var.tags
 
   account_kind             = "StorageV2"
   account_tier             = "Standard"
@@ -53,7 +53,7 @@ resource "azurerm_private_endpoint" "pe_stlaunchpadprd_prd" {
   name                = "pe-${azurerm_storage_account.this.name}-prd-${local.location_short[var.location]}"
   location            = var.location
   resource_group_name = var.resource_group_name
-  tags                = local.tags
+  tags                = var.tags
 
   subnet_id = azurerm_subnet.snet_launchpad_prd.id
 

@@ -7,16 +7,8 @@ This directory contains a set of Terraform tests categorized into `local`, `remo
 This directory contains tests for all Terraform examples in `../examples`. The following script modifies the `source` path in each example, initializes the test directory, runs the tests, and then reverts the changes.
 
 ```shell
-for file in ./examples/*/*.tf; do
-  sed -i.backup 's|source *= *"cloudeteer/launchpad/azurerm"|source = "../.."|g' $file
-done
-
 terraform init -test-directory=tests/examples
 terraform test -test-directory=tests/examples
-
-for file in ./examples/*/*.tf.backup; do
-  mv $file ${file%.backup}
-done
 ```
 
 ## `./local`

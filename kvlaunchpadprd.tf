@@ -8,7 +8,7 @@ resource "azurerm_key_vault" "this" {
   name                = "kvlaunchpadprd${local.location_short[var.location]}${random_string.kvlaunchpadprd_suffix.result}"
   location            = var.location
   resource_group_name = var.resource_group_name
-  tags                = local.tags
+  tags                = var.tags
 
   tenant_id = data.azurerm_client_config.current.tenant_id
 
@@ -29,7 +29,7 @@ resource "azurerm_private_endpoint" "pe_kvlaunchpadprd_prd" {
   name                = "pe-${azurerm_key_vault.this.name}-prd-${local.location_short[var.location]}"
   location            = var.location
   resource_group_name = var.resource_group_name
-  tags                = local.tags
+  tags                = var.tags
 
   subnet_id = azurerm_subnet.snet_launchpad_prd.id
 

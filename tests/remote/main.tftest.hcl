@@ -26,9 +26,9 @@ run "deploy_module" {
   command = apply
 
   variables {
-    resource_group_name = run.setup_tests.resource_group_name
-    location            = run.setup_tests.resource_group_location
-    management_groups   = []
+    resource_group_name   = run.setup_tests.resource_group_name
+    location              = run.setup_tests.resource_group_location
+    management_groups     = []
     snet_address_prefixes = ["10.0.0.0/28"]
     vnet_address_space    = ["10.0.0.0/27"]
 
@@ -38,7 +38,7 @@ run "deploy_module" {
     runner_github_repo  = "cloudeteer/terraform-azurerm-launchpad"
 
     # Initial deployment
-    init = true
+    init                   = true
     init_access_ip_address = run.setup_tests.init_access_ip_address
   }
 }

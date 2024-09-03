@@ -1,3 +1,16 @@
+locals {
+  init_access_azure_principal_id = (
+    var.init_access_azure_principal_id == null ?
+    data.azurerm_client_config.current.object_id :
+    var.init_access_azure_principal_id
+  )
+  location_short = {
+    germanywestcentral = "gwc"
+    westeurope         = "euw"
+
+  }
+}
+
 variable "init" {
   type        = bool
   default     = false
@@ -20,24 +33,25 @@ variable "init_access_ip_address" {
   }
 }
 
+variable "key_vault_private_dns_zone_ids" {
+  type        = list(string)
+  default     = []
+  description = "A list of ID´s of DNS Zones in order to add the Private Endpoint of the Keyvault into your DNS Zones."
+}
+
 variable "location" {
   type        = string
   description = "The geographic location where the resources will be deployed. This is must be a region name supported by Azure."
 }
 
-variable "vnet_address_space" {
-  type        = list(string)
-  description = "A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet."
-}
-
-variable "snet_address_prefixes" {
-  type        = list(string)
-  description = "A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network."
-}
-
 variable "management_groups" {
   type        = list(string)
   description = "A list of management group in order the Launchpad gets Owner-permission in these management-groups."
+}
+
+variable "resource_group_name" {
+  description = "The name of the resource group in which the virtual machine should exist. Changing this forces a new resource to be created."
+  type        = string
 }
 
 variable "runner_arch" {
@@ -57,12 +71,6 @@ variable "runner_count" {
   description = "Specify the number of instances of a GitHub Action runner to install on a single virtual machine instance."
 }
 
-variable "runner_public_ip_address" {
-  type        = bool
-  default     = false
-  description = "Set the value of this variable to `true` if you want to allocate a public IP address to each instance within the Virtual Machine Scale Set. Enabling this option may be necessary to establish internet access when a direct connection to a HUB is currently unavailable."
-}
-
 variable "runner_github_pat" {
   type        = string
   description = "GitHub PAT that will be used to register GitHub Action Runner tokens"
@@ -78,10 +86,10 @@ variable "runner_github_repo" {
   }
 }
 
-variable "runner_vm_instances" {
-  type        = string
-  description = "Set the amount of VM´s in the Virtual Machine Sscale Set (VMSS). (Default '1')"
-  default     = 1
+variable "runner_public_ip_address" {
+  type        = bool
+  default     = false
+  description = "Set the value of this variable to `true` if you want to allocate a public IP address to each instance within the Virtual Machine Scale Set. Enabling this option may be necessary to establish internet access when a direct connection to a HUB is currently unavailable."
 }
 
 variable "runner_user" {
@@ -90,54 +98,31 @@ variable "runner_user" {
   description = "An unprivileged user to run the Runner application. If this user does not exist on the system, a new user will be created."
 }
 
-variable "resource_group_name" {
-  type        = string
-  default     = null
-  description = "(Optional) Set the resource-group of the deployed resources, otherwise a new resource-group will be created"
-}
-
 variable "runner_version" {
   type        = string
   default     = "latest"
   description = "Set a specific GitHub action runner version (without the `v` in the version string) or use `latest`."
 }
 
-variable "key_vault_private_dns_zone_ids" {
-  type        = list(string)
-  default     = []
-  description = "A list of ID´s of DNS Zones in order to add the Private Endpoint of the Keyvault into your DNS Zones."
+variable "runner_vm_instances" {
+  type        = string
+  description = "Set the amount of VM´s in the Virtual Machine Sscale Set (VMSS). (Default '1')"
+  default     = 1
 }
 
-locals {
-  init_access_azure_principal_id = (
-    var.init_access_azure_principal_id == null ?
-    data.azurerm_client_config.current.object_id :
-    var.init_access_azure_principal_id
-  )
-  tags = {
-    # "backupclass"             = ""
-    # "business-criticality"    = ""
-    # "costcenter"              = ""
-    # "department"              = ""
-    # "deployment-type"         = ""
-    # "environment"             = ""
-    # "maintenance-window"      = ""
-    # "opsapp"                  = ""
-    # "opsinfra"                = ""
-    # "owner"                   = ""
-    # "service"                 = ""
-    # "tier"                    = ""
-    # "update-wave"             = ""
+variable "snet_address_prefixes" {
+  type        = list(string)
+  description = "A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network."
+}
 
-    "environment" = ""
-    "opsinfra"    = ""
-    "owner"       = ""
-    "service"     = "iac-launchpad"
-  }
+variable "tags" {
+  description = "A mapping of tags which should be assigned to all resources in this module."
 
-  location_short = {
-    germanywestcentral = "gwc"
-    westeurope         = "euw"
+  type    = map(string)
+  default = {}
+}
 
-  }
+variable "vnet_address_space" {
+  type        = list(string)
+  description = "A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet."
 }

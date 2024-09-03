@@ -11,7 +11,7 @@
 [![Keep a Changelog](https://img.shields.io/badge/changelog-Keep%20a%20Changelog%20v1.0.0-%23E05735)](CHANGELOG.md)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](.github/CONTRIBUTION.md)
 
-This module sets up the a Github repository with  first steps for working in an Azure environment in order to use Terraform and a private 
+This module sets up the a Github repository with  first steps for working in an Azure environment in order to use Terraform and a private
 
 <!-- BEGIN_TF_DOCS -->
 ## Usage
@@ -41,12 +41,16 @@ resource "azurerm_subnet" "example" {
 }
 
 module "example" {
-  source                = "cloudeteer/launchpad/azurerm"
-  github_pat            = "justRandomChars"
-  vnet_address_space    = azurerm_virtual_network.example.address_space[0]
-  snet_address_prefixes = azurerm_subnet.example.address_prefixes[0]
-  resource_group_name   = azurerm_resource_group.example.name
-  location              = azurerm_resource_group.example.location
+  source = "cloudeteer/launchpad/azurerm"
+
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+
+  runner_github_pat  = "<valid_github_pat>"
+  runner_github_repo = "cloudeteer/customer-repo"
+
+  vnet_address_space    = azurerm_virtual_network.example.address_space
+  snet_address_prefixes = azurerm_subnet.example.address_prefixes
   management_groups     = ["mg-cdt"]
 }
 ```
@@ -103,6 +107,12 @@ Type: `string`
 Description: A list of management group in order the Launchpad gets Owner-permission in these management-groups.
 
 Type: `list(string)`
+
+### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
+
+Description: The name of the resource group in which the virtual machine should exist. Changing this forces a new resource to be created.
+
+Type: `string`
 
 ### <a name="input_runner_github_pat"></a> [runner\_github\_pat](#input\_runner\_github\_pat)
 
@@ -164,14 +174,6 @@ Type: `list(string)`
 
 Default: `[]`
 
-### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
-
-Description: (Optional) Set the resource-group of the deployed resources, otherwise a new resource-group will be created
-
-Type: `string`
-
-Default: `null`
-
 ### <a name="input_runner_arch"></a> [runner\_arch](#input\_runner\_arch)
 
 Description: The CPU architecture to run the GitHub actions runner. Can be `x64` or `arm64`.
@@ -219,6 +221,14 @@ Description: Set the amount of VM´s in the Virtual Machine Sscale Set (VMSS). (
 Type: `string`
 
 Default: `1`
+
+### <a name="input_tags"></a> [tags](#input\_tags)
+
+Description: A mapping of tags which should be assigned to all resources in this module.
+
+Type: `map(string)`
+
+Default: `{}`
 
 ## Outputs
 

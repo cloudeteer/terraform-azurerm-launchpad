@@ -2,7 +2,7 @@ resource "azurerm_user_assigned_identity" "this" {
   name                = "id-launchpad-prd-${local.location_short[var.location]}"
   location            = var.location
   resource_group_name = var.resource_group_name
-  tags                = local.tags
+  tags                = var.tags
 }
 
 resource "azurerm_federated_identity_credential" "id_launchpad_prd_github_env" {
