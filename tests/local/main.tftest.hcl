@@ -15,7 +15,7 @@ run "use_wrongFormat_repo_1" {
   variables {
     runner_github_repo = "cloudeteer-squadTerraform"
   }
-  command = plan
+  command         = plan
   expect_failures = [var.runner_github_repo]
 }
 
@@ -23,7 +23,7 @@ run "use_wrongFormat_repo_2" {
   variables {
     runner_github_repo = "cloudeteer/squadTerraform/customer"
   }
-  command = plan
+  command         = plan
   expect_failures = [var.runner_github_repo]
 }
 
@@ -38,14 +38,14 @@ run "test_input_init_fail" {
 run "test_input_init" {
   command = plan
   variables {
-    init = true
+    init                   = true
     init_access_ip_address = "127.0.0.1"
   }
 }
 
 run "useUndefinedArch" {
   command = plan
-  variables{
+  variables {
     runner_arch = "arm86"
   }
   expect_failures = [var.runner_arch]
