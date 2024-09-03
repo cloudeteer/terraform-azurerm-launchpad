@@ -4,7 +4,7 @@ resource "random_string" "stlaunchpadprd_suffix" {
   upper   = false
 }
 
-resource "azurerm_storage_account" "stlaunchpadprd" {
+resource "azurerm_storage_account" "this" {
   name                = "stlaunchpadprd${local.location_short[var.location]}${random_string.stlaunchpadprd_suffix.result}"
   location            = var.location
   resource_group_name = var.resource_group_name
@@ -45,12 +45,12 @@ resource "azurerm_storage_account" "stlaunchpadprd" {
 
 resource "azurerm_storage_container" "stlaunchpadprd_tfstate" {
   name                  = "tfstate"
-  storage_account_name  = azurerm_storage_account.stlaunchpadprd.name
+  storage_account_name  = azurerm_storage_account.this.name
   container_access_type = "private"
 }
 
 resource "azurerm_private_endpoint" "pe_stlaunchpadprd_prd" {
-  name                = "pe-${azurerm_storage_account.stlaunchpadprd.name}-prd-${local.location_short[var.location]}"
+  name                = "pe-${azurerm_storage_account.this.name}-prd-${local.location_short[var.location]}"
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = local.tags
@@ -59,7 +59,7 @@ resource "azurerm_private_endpoint" "pe_stlaunchpadprd_prd" {
 
   private_service_connection {
     name                           = "blob"
-    private_connection_resource_id = azurerm_storage_account.stlaunchpadprd.id
+    private_connection_resource_id = azurerm_storage_account.this.id
     subresource_names              = ["blob"]
     is_manual_connection           = false
   }
@@ -71,5 +71,5 @@ resource "azurerm_role_assignment" "stlaunchpadprd_current_client_blob_owner" {
   description          = "Temporary role assignment. Delete this assignment if unsure why it is still existing."
   principal_id         = local.init_access_azure_principal_id
   role_definition_name = "Storage Blob Data Owner"
-  scope                = azurerm_storage_account.stlaunchpadprd.id
+  scope                = azurerm_storage_account.this.id
 }

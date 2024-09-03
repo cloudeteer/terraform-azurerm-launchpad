@@ -1,6 +1,7 @@
 variable "init" {
-  type    = bool
-  default = false
+  type        = bool
+  default     = false
+  description = "Is used for initiating the module itself for the first time. For more information please go here https://github.com/cloudeteer/terraform-azurerm-launchpad/blob/main/INSTALL.md "
 }
 
 variable "init_access_azure_principal_id" {
@@ -9,26 +10,45 @@ variable "init_access_azure_principal_id" {
 }
 
 variable "init_access_ip_address" {
-  type    = string
-  default = null
+  type        = string
+  default     = null
+  description = "Set the IP Address of your current public IP in order to access the new created resources. For more information please go here https://github.com/cloudeteer/terraform-azurerm-launchpad/blob/main/INSTALL.md "
+
+  validation {
+    condition     = (var.init && var.init_access_ip_address != null) || (!var.init && var.init_access_ip_address == null)
+    error_message = "init_access_ip_address ERROR!"
+  }
 }
 
 variable "location" {
-  type = string
+  type        = string
+  description = "The geographic location where the resources will be deployed. This is must be a region name supported by Azure."
 }
 
 variable "vnet_address_space" {
-  type = list(string)
+  type        = list(string)
+  description = "A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet."
 }
 
 variable "snet_address_prefixes" {
-  type = list(string)
+  type        = list(string)
+  description = "A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network."
+}
+
+variable "management_groups" {
+  type        = list(string)
+  description = "A list of management group in order the Launchpad gets Owner-permission in these management-groups."
 }
 
 variable "runner_arch" {
   type        = string
   default     = "arm64"
-  description = "The CPU achitecture to run the GitHub actions runner. Can be `x64` or `arm64`."
+  description = "The CPU architecture to run the GitHub actions runner. Can be `x64` or `arm64`."
+
+  validation {
+    condition     = contains(["x64", "arm64"], var.runner_arch)
+    error_message = "This architecture is not allowed. Please use 'x64' or 'arm64'"
+  }
 }
 
 variable "runner_count" {
@@ -54,8 +74,14 @@ variable "runner_github_repo" {
 
   validation {
     error_message = "You must specify the GitHub organization e.g. cloudeteer/squad-customer."
-    condition     = can(regex("/", var.runner_github_repo))
+    condition     = length(split("/", var.runner_github_repo)) == 2
   }
+}
+
+variable "runner_vm_instances" {
+  type        = string
+  description = "Set the amount of VM´s in the Virtual Machine Sscale Set (VMSS). (Default '1')"
+  default     = 1
 }
 
 variable "runner_user" {
@@ -77,8 +103,9 @@ variable "runner_version" {
 }
 
 variable "key_vault_private_dns_zone_ids" {
-  type    = list(string)
-  default = []
+  type        = list(string)
+  default     = []
+  description = "A list of ID´s of DNS Zones in order to add the Private Endpoint of the Keyvault into your DNS Zones."
 }
 
 locals {

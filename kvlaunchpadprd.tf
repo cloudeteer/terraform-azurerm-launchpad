@@ -4,7 +4,7 @@ resource "random_string" "kvlaunchpadprd_suffix" {
   upper   = false
 }
 
-resource "azurerm_key_vault" "kvlaunchpadprd" {
+resource "azurerm_key_vault" "this" {
   name                = "kvlaunchpadprd${local.location_short[var.location]}${random_string.kvlaunchpadprd_suffix.result}"
   location            = var.location
   resource_group_name = var.resource_group_name
@@ -26,7 +26,7 @@ resource "azurerm_key_vault" "kvlaunchpadprd" {
 }
 
 resource "azurerm_private_endpoint" "pe_kvlaunchpadprd_prd" {
-  name                = "pe-${azurerm_key_vault.kvlaunchpadprd.name}-prd-${local.location_short[var.location]}"
+  name                = "pe-${azurerm_key_vault.this.name}-prd-${local.location_short[var.location]}"
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = local.tags
@@ -35,7 +35,7 @@ resource "azurerm_private_endpoint" "pe_kvlaunchpadprd_prd" {
 
   private_service_connection {
     name                           = "vault"
-    private_connection_resource_id = azurerm_key_vault.kvlaunchpadprd.id
+    private_connection_resource_id = azurerm_key_vault.this.id
     subresource_names              = ["vault"]
     is_manual_connection           = false
   }
@@ -49,11 +49,11 @@ resource "azurerm_private_endpoint" "pe_kvlaunchpadprd_prd" {
   }
 }
 
-resource "azurerm_role_assignment" "kvlaunchpadprd_current_client_key_vault_administrator" {
+resource "azurerm_role_assignment" "init_kvlaunchpadprd_current_client_key_vault_administrator" {
   count = var.init ? 1 : 0
 
   description          = "Temporary role assignment. Delete this assignment if unsure why it is still existing."
   principal_id         = local.init_access_azure_principal_id
   role_definition_name = "Key Vault Administrator"
-  scope                = azurerm_key_vault.kvlaunchpadprd.id
+  scope                = azurerm_key_vault.this.id
 }

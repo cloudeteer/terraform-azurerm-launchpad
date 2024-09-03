@@ -1,10 +1,10 @@
 locals {
   admin_username = "azureadmin"
   github_runner_script = base64gzip(templatefile("assets/install_github_actions_runner.sh.tftpl", {
-    key_vault_hostname                  = "${azurerm_key_vault.kvlaunchpadprd.name}.vault.azure.net"
+    key_vault_hostname                  = "${azurerm_key_vault.this.name}.vault.azure.net"
     private_endpoint_key_vault_ip       = one(azurerm_private_endpoint.pe_kvlaunchpadprd_prd.private_service_connection[*].private_ip_address)
     private_endpoint_storage_account_ip = one(azurerm_private_endpoint.pe_stlaunchpadprd_prd.private_service_connection[*].private_ip_address)
-    storage_account_hostname            = azurerm_storage_account.stlaunchpadprd.primary_blob_host
+    storage_account_hostname            = azurerm_storage_account.this.primary_blob_host
 
     runner_arch        = var.runner_arch
     runner_count       = var.runner_count
@@ -25,7 +25,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "vmss_launchpad_prd" {
   admin_username                  = local.admin_username
   computer_name_prefix            = "vm-launchpad"
   disable_password_authentication = false
-  instances                       = 1
+  instances                       = var.runner_vm_instances
   sku                             = "Standard_D2plds_v5"
   encryption_at_host_enabled      = false
 
@@ -140,6 +140,6 @@ resource "azurerm_key_vault_secret" "vmss_launchpad_prd_azureadmin_password" {
   name = "${azurerm_linux_virtual_machine_scale_set.vmss_launchpad_prd.name}-${azurerm_linux_virtual_machine_scale_set.vmss_launchpad_prd.admin_username}-password"
 
   content_type = "Password"
-  key_vault_id = azurerm_key_vault.kvlaunchpadprd.id
+  key_vault_id = azurerm_key_vault.this.id
   value        = random_password.vmss_launchpad_prd_azureadmin_password.result
 }
