@@ -33,6 +33,14 @@ resource "azurerm_role_assignment" "mg_owner" {
   scope                = each.value.id
 }
 
+resource "azurerm_role_assignment" "id_launchpad_prd_sub_scope" {
+  for_each = toset(var.subscription_ids)
+
+  principal_id         = azurerm_user_assigned_identity.this.principal_id
+  role_definition_name = "Owner"
+  scope                = data.azurerm_subscription.id_launchpad_prd_sub_scope[each.key].id
+}
+
 resource "azurerm_role_assignment" "this" {
   for_each = {
     storage_blob_owner = {

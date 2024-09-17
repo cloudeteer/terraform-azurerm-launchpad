@@ -6,12 +6,13 @@ variables {
   location              = "germanywestcentral"
   resource_group_name   = "rg-lets-launch"
   management_groups     = ["cdt-mgmt"]
+  subscription_ids = ["12345678-1234-9876-4563-123456789012"]
 }
 mock_provider "azurerm" {
   source = "./tests/local/mock_provider"
 }
 
-run "use_wrongFormat_repo_1" {
+run "use_wrong_format_repo_1" {
   variables {
     runner_github_repo = "cloudeteer-squadTerraform"
   }
@@ -19,7 +20,7 @@ run "use_wrongFormat_repo_1" {
   expect_failures = [var.runner_github_repo]
 }
 
-run "use_wrongFormat_repo_2" {
+run "use_wrong_format_repo_2" {
   variables {
     runner_github_repo = "cloudeteer/squadTerraform/customer"
   }
@@ -43,10 +44,18 @@ run "test_input_init" {
   }
 }
 
-run "useUndefinedArch" {
+run "use_undefined_arch" {
   command = plan
   variables {
     runner_arch = "arm86"
   }
   expect_failures = [var.runner_arch]
+}
+
+run "use_wrong_format_for_sub_id"{
+  command = plan
+  variables {
+    subscription_ids = ["12345678-1234-9876-4563-123456789012","12345678-1234-9876-4563-12345678901"]
+  }
+  expect_failures = [var.subscription_ids]
 }

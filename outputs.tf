@@ -1,13 +1,13 @@
-output "ARM_CLIENT_ID" {
+output "LAUNCHPAD_AZURE_CLIENT_ID" {
   value = azurerm_user_assigned_identity.this.client_id
 }
 
-output "tfstate_storage_account_name" {
-  value = azurerm_storage_account.this.name
+output "LAUNCHPAD_AZURE_TENANT_ID" {
+  value = azurerm_user_assigned_identity.this.tenant_id
 }
 
-output "key_vault_name" {
-  value = azurerm_key_vault.this.name
+output "LAUNCHPAD_AZURE_STORAGE_ACCOUNT_NAME" {
+  value = azurerm_storage_account.this.name
 }
 
 output "location" {

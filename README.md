@@ -11,7 +11,12 @@
 [![Keep a Changelog](https://img.shields.io/badge/changelog-Keep%20a%20Changelog%20v1.0.0-%23E05735)](CHANGELOG.md)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](.github/CONTRIBUTION.md)
 
-This module sets up the a Github repository with  first steps for working in an Azure environment in order to use Terraform and a private
+This module sets up the a Github repository with  first steps for working in an Azure environment in order to use Terraform and a private.
+
+## Design
+The IaC Launchpad is a collection of essential Azure resources required for managing Terraform deployments via Cloudeteer GitHub Actions. The term “Launchpad” draws an analogy to rocket science, emphasizing the foundational role it plays.
+
+[![Launchpad Design](images/diagram.svg)](images/diagram.png)
 
 <!-- BEGIN_TF_DOCS -->
 ## Usage
@@ -76,6 +81,7 @@ The following resources are used by this module:
 - [azurerm_network_security_group.nsg_launchpad_prd](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) (resource)
 - [azurerm_private_endpoint.pe_kvlaunchpadprd_prd](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_private_endpoint.pe_stlaunchpadprd_prd](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
+- [azurerm_role_assignment.id_launchpad_prd_sub_scope](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_role_assignment.init_kvlaunchpadprd_current_client_key_vault_administrator](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_role_assignment.mg_owner](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_role_assignment.stlaunchpadprd_current_client_blob_owner](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
@@ -91,6 +97,7 @@ The following resources are used by this module:
 - [random_string.stlaunchpadprd_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 - [azurerm_management_group.mg_owner](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/management_group) (data source)
+- [azurerm_subscription.id_launchpad_prd_sub_scope](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) (data source)
 
 ## Required Inputs
 
@@ -129,6 +136,12 @@ Type: `string`
 ### <a name="input_snet_address_prefixes"></a> [snet\_address\_prefixes](#input\_snet\_address\_prefixes)
 
 Description: A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network.
+
+Type: `list(string)`
+
+### <a name="input_subscription_ids"></a> [subscription\_ids](#input\_subscription\_ids)
+
+Description: A list of subscription IDs, each must be exactly 31 characters long.
 
 Type: `list(string)`
 
@@ -234,11 +247,15 @@ Default: `{}`
 
 The following outputs are exported:
 
-### <a name="output_ARM_CLIENT_ID"></a> [ARM\_CLIENT\_ID](#output\_ARM\_CLIENT\_ID)
+### <a name="output_LAUNCHPAD_AZURE_CLIENT_ID"></a> [LAUNCHPAD\_AZURE\_CLIENT\_ID](#output\_LAUNCHPAD\_AZURE\_CLIENT\_ID)
 
 Description: n/a
 
-### <a name="output_key_vault_name"></a> [key\_vault\_name](#output\_key\_vault\_name)
+### <a name="output_LAUNCHPAD_AZURE_STORAGE_ACCOUNT_NAME"></a> [LAUNCHPAD\_AZURE\_STORAGE\_ACCOUNT\_NAME](#output\_LAUNCHPAD\_AZURE\_STORAGE\_ACCOUNT\_NAME)
+
+Description: n/a
+
+### <a name="output_LAUNCHPAD_AZURE_TENANT_ID"></a> [LAUNCHPAD\_AZURE\_TENANT\_ID](#output\_LAUNCHPAD\_AZURE\_TENANT\_ID)
 
 Description: n/a
 
@@ -251,10 +268,6 @@ Description: n/a
 Description: n/a
 
 ### <a name="output_subnet_name"></a> [subnet\_name](#output\_subnet\_name)
-
-Description: n/a
-
-### <a name="output_tfstate_storage_account_name"></a> [tfstate\_storage\_account\_name](#output\_tfstate\_storage\_account\_name)
 
 Description: n/a
 

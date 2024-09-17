@@ -73,6 +73,7 @@ variable "runner_count" {
 
 variable "runner_github_pat" {
   type        = string
+  sensitive   = true
   description = "GitHub PAT that will be used to register GitHub Action Runner tokens"
 }
 
@@ -113,6 +114,16 @@ variable "runner_vm_instances" {
 variable "snet_address_prefixes" {
   type        = list(string)
   description = "A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network."
+}
+
+variable "subscription_ids" {
+  type        = list(string)
+  description = "A list of subscription IDs, each must be exactly 31 characters long."
+
+  validation {
+    condition     = alltrue([for id in var.subscription_ids : length(id) == 36])
+    error_message = "Each subscription ID must be exactly 31 characters long."
+  }
 }
 
 variable "tags" {
