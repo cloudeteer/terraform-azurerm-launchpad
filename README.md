@@ -249,33 +249,33 @@ The following outputs are exported:
 
 ### <a name="output_LAUNCHPAD_AZURE_CLIENT_ID"></a> [LAUNCHPAD\_AZURE\_CLIENT\_ID](#output\_LAUNCHPAD\_AZURE\_CLIENT\_ID)
 
-Description: n/a
+Description: The Client ID of the Azure User Assigned Identity for the Launchpad.
 
 ### <a name="output_LAUNCHPAD_AZURE_STORAGE_ACCOUNT_NAME"></a> [LAUNCHPAD\_AZURE\_STORAGE\_ACCOUNT\_NAME](#output\_LAUNCHPAD\_AZURE\_STORAGE\_ACCOUNT\_NAME)
 
-Description: n/a
+Description: The name of the Azure Storage Account created for the Launchpad.
 
 ### <a name="output_LAUNCHPAD_AZURE_TENANT_ID"></a> [LAUNCHPAD\_AZURE\_TENANT\_ID](#output\_LAUNCHPAD\_AZURE\_TENANT\_ID)
 
-Description: n/a
+Description: The Tenant ID associated with the Azure User Assigned Identity for the Launchpad.
 
 ### <a name="output_location"></a> [location](#output\_location)
 
-Description: n/a
+Description: The Azure region where the resources for the Launchpad are deployed.
 
 ### <a name="output_subnet_id"></a> [subnet\_id](#output\_subnet\_id)
 
-Description: n/a
+Description: The ID of the subnet within the Virtual Network, associated with the Launchpad production environment.
 
 ### <a name="output_subnet_name"></a> [subnet\_name](#output\_subnet\_name)
 
-Description: n/a
+Description: The name of the subnet within the Virtual Network, associated with the Launchpad production environment.
 
 ### <a name="output_vnet_id"></a> [vnet\_id](#output\_vnet\_id)
 
-Description: n/a
+Description: The ID of the Azure Virtual Network (VNet) associated with the Launchpad.
 
 ### <a name="output_vnet_name"></a> [vnet\_name](#output\_vnet\_name)
 
-Description: n/a
+Description: The name of the Azure Virtual Network (VNet) associated with the Launchpad.
 <!-- END_TF_DOCS -->
