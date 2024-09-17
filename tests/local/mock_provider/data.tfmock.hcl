@@ -16,9 +16,9 @@ mock_data "azurerm_management_group" {
   }
 }
 
-mock_data "azurerm_subscription"{
+mock_data "azurerm_subscription" {
   defaults = {
-      id   = "/subscriptions/12345678-1234-9876-4563-123456789012"
-      name = "Subscription 1"
-    }
+    id   = "/subscriptions/12345678-1234-9876-4563-123456789012"
+    name = "Subscription 1"
+  }
 }

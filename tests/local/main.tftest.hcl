@@ -6,7 +6,7 @@ variables {
   location              = "germanywestcentral"
   resource_group_name   = "rg-lets-launch"
   management_groups     = ["cdt-mgmt"]
-  subscription_ids = ["12345678-1234-9876-4563-123456789012"]
+  subscription_ids      = ["12345678-1234-9876-4563-123456789012"]
 }
 mock_provider "azurerm" {
   source = "./tests/local/mock_provider"
@@ -52,10 +52,10 @@ run "use_undefined_arch" {
   expect_failures = [var.runner_arch]
 }
 
-run "use_wrong_format_for_sub_id"{
+run "use_wrong_format_for_sub_id" {
   command = plan
   variables {
-    subscription_ids = ["12345678-1234-9876-4563-123456789012","12345678-1234-9876-4563-12345678901"]
+    subscription_ids = ["12345678-1234-9876-4563-123456789012", "12345678-1234-9876-4563-12345678901"]
   }
   expect_failures = [var.subscription_ids]
 }
