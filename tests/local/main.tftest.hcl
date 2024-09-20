@@ -10,7 +10,7 @@ variables {
 }
 
 mock_provider "azurerm" {
-  source = "./tests/local/mock_provider"
+  source = "./tests/local/mocks"
 }
 
 run "use_wrong_format_repo_1" {
