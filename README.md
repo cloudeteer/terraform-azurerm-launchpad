@@ -7,13 +7,11 @@
 
 # terraform-azurerm-launchpad
 
-[![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue.svg)](CHANGELOG.md)
-[![Keep a Changelog](https://img.shields.io/badge/changelog-Keep%20a%20Changelog%20v1.0.0-%23E05735)](CHANGELOG.md)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](.github/CONTRIBUTION.md)
+[![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue.svg)](https://github.com/cloudeteer/terraform-azurerm-launchpad/releases)
 
-This module sets up the a Github repository with  first steps for working in an Azure environment in order to use Terraform and a private.
-
+This module provisions all essential infrastructure components within an Azure tenant to enable secure, automated management using Terraform and GitHub. It sets up a GitHub private runner, a Terraform state storage account, and other key resources necessary for fully automated Terraform deployments. The module is designed to adhere to security best practices throughout the process.
 ## Design
+
 The IaC Launchpad is a collection of essential Azure resources required for managing Terraform deployments via Cloudeteer GitHub Actions. The term “Launchpad” draws an analogy to rocket science, emphasizing the foundational role it plays.
 
 [![Launchpad Design](images/diagram.svg)](images/diagram.png)
@@ -30,7 +28,7 @@ resource "azurerm_resource_group" "example" {
 }
 
 resource "azurerm_virtual_network" "example" {
-  name                = "vnet-example-dev-we-01"
+  name                = "vnet-example-dev-gwc-01"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
 
@@ -38,7 +36,7 @@ resource "azurerm_virtual_network" "example" {
 }
 
 resource "azurerm_subnet" "example" {
-  name                = "snet-example-dev-we-01"
+  name                = "snet-example-dev-gwc-01"
   resource_group_name = azurerm_resource_group.example.name
 
   address_prefixes     = ["10.0.2.0/24"]
@@ -51,12 +49,12 @@ module "example" {
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  runner_github_pat  = "<valid_github_pat>"
-  runner_github_repo = "cloudeteer/customer-repo"
+  runner_github_pat  = "github_pat_0000000000000000000000_00000000000000000000000000000000000000000000000000000000000"
+  runner_github_repo = "owner/repository"
 
-  vnet_address_space    = azurerm_virtual_network.example.address_space
-  snet_address_prefixes = azurerm_subnet.example.address_prefixes
-  management_groups     = ["mg-cdt"]
+  virtual_network_address_space = azurerm_virtual_network.example.address_space
+  subnet_address_prefixes       = azurerm_subnet.example.address_prefixes
+  management_group_names        = ["mg-example"]
 }
 ```
 
@@ -64,9 +62,9 @@ module "example" {
 
 The following providers are used by this module:
 
-- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (~> 3.111)
+- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (>= 3.114)
 
-- <a name="provider_random"></a> [random](#provider\_random) (~> 3.6)
+- <a name="provider_random"></a> [random](#provider\_random) (>= 3.6)
 
 
 
@@ -74,30 +72,30 @@ The following providers are used by this module:
 
 The following resources are used by this module:
 
-- [azurerm_federated_identity_credential.id_launchpad_prd_github_env](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) (resource)
+- [azurerm_federated_identity_credential.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) (resource)
 - [azurerm_key_vault.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) (resource)
-- [azurerm_key_vault_secret.vmss_launchpad_prd_azureadmin_password](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) (resource)
-- [azurerm_linux_virtual_machine_scale_set.vmss_launchpad_prd](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set) (resource)
-- [azurerm_network_security_group.nsg_launchpad_prd](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) (resource)
-- [azurerm_private_endpoint.pe_kvlaunchpadprd_prd](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
-- [azurerm_private_endpoint.pe_stlaunchpadprd_prd](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
-- [azurerm_role_assignment.id_launchpad_prd_sub_scope](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
-- [azurerm_role_assignment.init_kvlaunchpadprd_current_client_key_vault_administrator](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
-- [azurerm_role_assignment.mg_owner](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
-- [azurerm_role_assignment.stlaunchpadprd_current_client_blob_owner](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
-- [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
+- [azurerm_key_vault_secret.virtual_machine_scale_set_admin_password](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) (resource)
+- [azurerm_linux_virtual_machine_scale_set.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set) (resource)
+- [azurerm_network_security_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) (resource)
+- [azurerm_private_endpoint.key_vault](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
+- [azurerm_private_endpoint.storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
+- [azurerm_role_assignment.key_vault_admin_current_user](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
+- [azurerm_role_assignment.management_group_owner](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
+- [azurerm_role_assignment.resource_specific](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
+- [azurerm_role_assignment.storage_account_blob_owner_current_user](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
+- [azurerm_role_assignment.subscription_owner](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_storage_account.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
-- [azurerm_storage_container.stlaunchpadprd_tfstate](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_container) (resource)
-- [azurerm_subnet.snet_launchpad_prd](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
-- [azurerm_subnet_network_security_group_association.snet_launchpad_prd](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet_network_security_group_association) (resource)
+- [azurerm_storage_container.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_container) (resource)
+- [azurerm_subnet.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
+- [azurerm_subnet_network_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet_network_security_group_association) (resource)
 - [azurerm_user_assigned_identity.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity) (resource)
 - [azurerm_virtual_network.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)
-- [random_password.vmss_launchpad_prd_azureadmin_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) (resource)
+- [random_password.virtual_machine_scale_set_admin_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) (resource)
 - [random_string.kvlaunchpadprd_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) (resource)
 - [random_string.stlaunchpadprd_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
-- [azurerm_management_group.mg_owner](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/management_group) (data source)
-- [azurerm_subscription.id_launchpad_prd_sub_scope](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) (data source)
+- [azurerm_management_group.managed_by_launchpad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/management_group) (data source)
+- [azurerm_subscription.managed_by_launchpad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) (data source)
 
 ## Required Inputs
 
@@ -109,7 +107,7 @@ Description: The geographic location where the resources will be deployed. This 
 
 Type: `string`
 
-### <a name="input_management_groups"></a> [management\_groups](#input\_management\_groups)
+### <a name="input_management_group_names"></a> [management\_group\_names](#input\_management\_group\_names)
 
 Description: A list of management group in order the Launchpad gets Owner-permission in these management-groups.
 
@@ -133,19 +131,13 @@ Description: Specify the GitHub repository owner and name seperated by `/` to re
 
 Type: `string`
 
-### <a name="input_snet_address_prefixes"></a> [snet\_address\_prefixes](#input\_snet\_address\_prefixes)
+### <a name="input_subnet_address_prefixes"></a> [subnet\_address\_prefixes](#input\_subnet\_address\_prefixes)
 
 Description: A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network.
 
 Type: `list(string)`
 
-### <a name="input_subscription_ids"></a> [subscription\_ids](#input\_subscription\_ids)
-
-Description: A list of subscription IDs, each must be exactly 31 characters long.
-
-Type: `list(string)`
-
-### <a name="input_vnet_address_space"></a> [vnet\_address\_space](#input\_vnet\_address\_space)
+### <a name="input_virtual_network_address_space"></a> [virtual\_network\_address\_space](#input\_virtual\_network\_address\_space)
 
 Description: A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet.
 
@@ -203,6 +195,21 @@ Type: `string`
 
 Default: `"5"`
 
+### <a name="input_runner_github_environments"></a> [runner\_github\_environments](#input\_runner\_github\_environments)
+
+Description: List of Github environments used by federal identity.
+
+Type: `map(string)`
+
+Default:
+
+```json
+{
+  "prod-azure": "prod-azure",
+  "prod-azure-plan": "prod-azure (plan)"
+}
+```
+
 ### <a name="input_runner_public_ip_address"></a> [runner\_public\_ip\_address](#input\_runner\_public\_ip\_address)
 
 Description: Set the value of this variable to `true` if you want to allocate a public IP address to each instance within the Virtual Machine Scale Set. Enabling this option may be necessary to establish internet access when a direct connection to a HUB is currently unavailable.
@@ -235,6 +242,14 @@ Type: `string`
 
 Default: `1`
 
+### <a name="input_subscription_ids"></a> [subscription\_ids](#input\_subscription\_ids)
+
+Description: A list of subscription IDs, which the Launchpad will manage.Each must be exactly 36 characters long.
+
+Type: `list(string)`
+
+Default: `[]`
+
 ### <a name="input_tags"></a> [tags](#input\_tags)
 
 Description: A mapping of tags which should be assigned to all resources in this module.
@@ -249,19 +264,15 @@ The following outputs are exported:
 
 ### <a name="output_LAUNCHPAD_AZURE_CLIENT_ID"></a> [LAUNCHPAD\_AZURE\_CLIENT\_ID](#output\_LAUNCHPAD\_AZURE\_CLIENT\_ID)
 
-Description: The Client ID of the Azure User Assigned Identity for the Launchpad.
+Description: The client ID of the Azure user identity assigned to the Launchpad.
 
 ### <a name="output_LAUNCHPAD_AZURE_STORAGE_ACCOUNT_NAME"></a> [LAUNCHPAD\_AZURE\_STORAGE\_ACCOUNT\_NAME](#output\_LAUNCHPAD\_AZURE\_STORAGE\_ACCOUNT\_NAME)
 
-Description: The name of the Azure Storage Account created for the Launchpad.
+Description: The storage account name used by the Launchpad for the Terraform state backend.
 
 ### <a name="output_LAUNCHPAD_AZURE_TENANT_ID"></a> [LAUNCHPAD\_AZURE\_TENANT\_ID](#output\_LAUNCHPAD\_AZURE\_TENANT\_ID)
 
-Description: The Tenant ID associated with the Azure User Assigned Identity for the Launchpad.
-
-### <a name="output_location"></a> [location](#output\_location)
-
-Description: The Azure region where the resources for the Launchpad are deployed.
+Description: The tenant ID of the Azure user identity assigned to the Launchpad
 
 ### <a name="output_subnet_id"></a> [subnet\_id](#output\_subnet\_id)
 
@@ -271,11 +282,11 @@ Description: The ID of the subnet within the Virtual Network, associated with th
 
 Description: The name of the subnet within the Virtual Network, associated with the Launchpad production environment.
 
-### <a name="output_vnet_id"></a> [vnet\_id](#output\_vnet\_id)
+### <a name="output_virtual_network_id"></a> [virtual\_network\_id](#output\_virtual\_network\_id)
 
 Description: The ID of the Azure Virtual Network (VNet) associated with the Launchpad.
 
-### <a name="output_vnet_name"></a> [vnet\_name](#output\_vnet\_name)
+### <a name="output_virtual_network_name"></a> [virtual\_network\_name](#output\_virtual\_network\_name)
 
 Description: The name of the Azure Virtual Network (VNet) associated with the Launchpad.
 <!-- END_TF_DOCS -->

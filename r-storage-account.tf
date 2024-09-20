@@ -16,7 +16,7 @@ resource "azurerm_storage_account" "this" {
 
   cross_tenant_replication_enabled  = false
   default_to_oauth_authentication   = true
-  enable_https_traffic_only         = true
+  https_traffic_only_enabled        = true
   infrastructure_encryption_enabled = true
   is_hns_enabled                    = false
   large_file_share_enabled          = false
@@ -43,19 +43,19 @@ resource "azurerm_storage_account" "this" {
   }
 }
 
-resource "azurerm_storage_container" "stlaunchpadprd_tfstate" {
+resource "azurerm_storage_container" "this" {
   name                  = "tfstate"
   storage_account_name  = azurerm_storage_account.this.name
   container_access_type = "private"
 }
 
-resource "azurerm_private_endpoint" "pe_stlaunchpadprd_prd" {
+resource "azurerm_private_endpoint" "storage_account" {
   name                = "pe-${azurerm_storage_account.this.name}-prd-${local.location_short[var.location]}"
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
 
-  subnet_id = azurerm_subnet.snet_launchpad_prd.id
+  subnet_id = azurerm_subnet.this.id
 
   private_service_connection {
     name                           = "blob"
@@ -65,7 +65,7 @@ resource "azurerm_private_endpoint" "pe_stlaunchpadprd_prd" {
   }
 }
 
-resource "azurerm_role_assignment" "stlaunchpadprd_current_client_blob_owner" {
+resource "azurerm_role_assignment" "storage_account_blob_owner_current_user" {
   count = var.init ? 1 : 0
 
   description          = "Temporary role assignment. Delete this assignment if unsure why it is still existing."

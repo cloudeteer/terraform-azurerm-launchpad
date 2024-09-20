@@ -4,7 +4,7 @@ resource "azurerm_resource_group" "example" {
 }
 
 resource "azurerm_virtual_network" "example" {
-  name                = "vnet-example-dev-we-01"
+  name                = "vnet-example-dev-gwc-01"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
 
@@ -12,7 +12,7 @@ resource "azurerm_virtual_network" "example" {
 }
 
 resource "azurerm_subnet" "example" {
-  name                = "snet-example-dev-we-01"
+  name                = "snet-example-dev-gwc-01"
   resource_group_name = azurerm_resource_group.example.name
 
   address_prefixes     = ["10.0.2.0/24"]
@@ -25,10 +25,10 @@ module "example" {
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  runner_github_pat  = "<valid_github_pat>"
-  runner_github_repo = "cloudeteer/customer-repo"
+  runner_github_pat  = "github_pat_0000000000000000000000_00000000000000000000000000000000000000000000000000000000000"
+  runner_github_repo = "owner/repository"
 
-  vnet_address_space    = azurerm_virtual_network.example.address_space
-  snet_address_prefixes = azurerm_subnet.example.address_prefixes
-  management_groups     = ["mg-cdt"]
+  virtual_network_address_space = azurerm_virtual_network.example.address_space
+  subnet_address_prefixes       = azurerm_subnet.example.address_prefixes
+  management_group_names        = ["mg-example"]
 }

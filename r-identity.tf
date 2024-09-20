@@ -5,11 +5,8 @@ resource "azurerm_user_assigned_identity" "this" {
   tags                = var.tags
 }
 
-resource "azurerm_federated_identity_credential" "id_launchpad_prd_github_env" {
-  for_each = {
-    prod-azure      = "prod-azure"
-    prod-azure-plan = "prod-azure (plan)"
-  }
+resource "azurerm_federated_identity_credential" "this" {
+  for_each = var.runner_github_environments
 
   name = each.key
 
@@ -20,28 +17,24 @@ resource "azurerm_federated_identity_credential" "id_launchpad_prd_github_env" {
   subject             = "repo:${var.runner_github_repo}:environment:${each.value}"
 }
 
-data "azurerm_management_group" "mg_owner" {
-  for_each = toset(var.management_groups)
-  name     = each.value
-}
 
-resource "azurerm_role_assignment" "mg_owner" {
-  for_each = data.azurerm_management_group.mg_owner
+resource "azurerm_role_assignment" "management_group_owner" {
+  for_each = data.azurerm_management_group.managed_by_launchpad
 
   principal_id         = azurerm_user_assigned_identity.this.principal_id
   role_definition_name = "Owner"
   scope                = each.value.id
 }
 
-resource "azurerm_role_assignment" "id_launchpad_prd_sub_scope" {
+resource "azurerm_role_assignment" "subscription_owner" {
   for_each = toset(var.subscription_ids)
 
   principal_id         = azurerm_user_assigned_identity.this.principal_id
   role_definition_name = "Owner"
-  scope                = data.azurerm_subscription.id_launchpad_prd_sub_scope[each.key].id
+  scope                = data.azurerm_subscription.managed_by_launchpad[each.key].id
 }
 
-resource "azurerm_role_assignment" "this" {
+resource "azurerm_role_assignment" "resource_specific" {
   for_each = {
     storage_blob_owner = {
       role_definition_name = "Storage Blob Data Owner"

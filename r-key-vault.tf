@@ -25,13 +25,13 @@ resource "azurerm_key_vault" "this" {
   }
 }
 
-resource "azurerm_private_endpoint" "pe_kvlaunchpadprd_prd" {
+resource "azurerm_private_endpoint" "key_vault" {
   name                = "pe-${azurerm_key_vault.this.name}-prd-${local.location_short[var.location]}"
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
 
-  subnet_id = azurerm_subnet.snet_launchpad_prd.id
+  subnet_id = azurerm_subnet.this.id
 
   private_service_connection {
     name                           = "vault"
@@ -49,7 +49,7 @@ resource "azurerm_private_endpoint" "pe_kvlaunchpadprd_prd" {
   }
 }
 
-resource "azurerm_role_assignment" "init_kvlaunchpadprd_current_client_key_vault_administrator" {
+resource "azurerm_role_assignment" "key_vault_admin_current_user" {
   count = var.init ? 1 : 0
 
   description          = "Temporary role assignment. Delete this assignment if unsure why it is still existing."

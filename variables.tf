@@ -1,84 +1,3 @@
-locals {
-  init_access_azure_principal_id = (
-    var.init_access_azure_principal_id == null ?
-    data.azurerm_client_config.current.object_id :
-    var.init_access_azure_principal_id
-  )
-  location_short = {
-    asia               = "asia"
-    asiapacific        = "apac"
-    australia          = "aus"
-    australiacentral   = "auc"
-    australiacentral2  = "auc2"
-    australiaeast      = "aue"
-    australiasoutheast = "ause"
-    brazil             = "bra"
-    brazilsouth        = "brs"
-    brazilsoutheast    = "brse"
-    canada             = "can"
-    canadacentral      = "cac"
-    canadaeast         = "cae"
-    centralindia       = "inc"
-    centralus          = "usc"
-    chinaeast          = "cne"
-    chinaeast2         = "cne2"
-    chinaeast3         = "cne3"
-    chinanorth         = "cnn"
-    chinanorth2        = "cnn2"
-    chinanorth3        = "cnn3"
-    eastasia           = "asea"
-    eastus             = "use"
-    eastus2            = "use2"
-    europe             = "eu"
-    francecentral      = "frc"
-    francesouth        = "frs"
-    germanycentral     = "gce"
-    germanynorth       = "gno"
-    germanynortheast   = "gne"
-    germanywestcentral = "gwc"
-    global             = "glob"
-    india              = "ind"
-    israelcentral      = "ilc"
-    italynorth         = "itn"
-    japan              = "jap"
-    japaneast          = "jpe"
-    japanwest          = "jpw"
-    korea              = "kor"
-    koreacentral       = "krc"
-    koreasouth         = "krs"
-    northcentralus     = "usnc"
-    northeurope        = "eun"
-    norway             = "nor"
-    norwayeast         = "noe"
-    norwaywest         = "now"
-    polandcentral      = "polc"
-    qatarcentral       = "qatc"
-    singapore          = "sgp"
-    southafricanorth   = "san"
-    southafricawest    = "saw"
-    southcentralus     = "ussc"
-    southeastasia      = "asse"
-    southindia         = "ins"
-    sweden             = "swe"
-    swedencentral      = "swec"
-    swedensouth        = "swes"
-    switzerlandnorth   = "swn"
-    switzerlandwest    = "sww"
-    uaecentral         = "uaec"
-    uaenorth           = "uaen"
-    uk                 = "uk"
-    uksouth            = "uks"
-    ukwest             = "ukw"
-    unitedstates       = "us"
-    westcentralus      = "uswc"
-    westeurope         = "euw"
-    westindia          = "inw"
-    westus             = "usw"
-    westus2            = "usw2"
-    westus3            = "usw3"
-  }
-}
-
 variable "init" {
   type        = bool
   default     = false
@@ -112,7 +31,7 @@ variable "location" {
   description = "The geographic location where the resources will be deployed. This is must be a region name supported by Azure."
 }
 
-variable "management_groups" {
+variable "management_group_names" {
   type        = list(string)
   description = "A list of management group in order the Launchpad gets Owner-permission in these management-groups."
 }
@@ -137,6 +56,15 @@ variable "runner_count" {
   type        = string
   default     = "5"
   description = "Specify the number of instances of a GitHub Action runner to install on a single virtual machine instance."
+}
+
+variable "runner_github_environments" {
+  type = map(string)
+  default = {
+    prod-azure      = "prod-azure"
+    prod-azure-plan = "prod-azure (plan)"
+  }
+  description = "List of Github environments used by federal identity."
 }
 
 variable "runner_github_pat" {
@@ -179,18 +107,19 @@ variable "runner_vm_instances" {
   default     = 1
 }
 
-variable "snet_address_prefixes" {
+variable "subnet_address_prefixes" {
   type        = list(string)
   description = "A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network."
 }
 
 variable "subscription_ids" {
   type        = list(string)
-  description = "A list of subscription IDs, each must be exactly 31 characters long."
+  description = "A list of subscription IDs, which the Launchpad will manage.Each must be exactly 36 characters long."
+  default     = []
 
   validation {
     condition     = alltrue([for id in var.subscription_ids : length(id) == 36])
-    error_message = "Each subscription ID must be exactly 31 characters long."
+    error_message = "Each subscription ID must be exactly 36 characters long."
   }
 }
 
@@ -201,7 +130,7 @@ variable "tags" {
   default = {}
 }
 
-variable "vnet_address_space" {
+variable "virtual_network_address_space" {
   type        = list(string)
   description = "A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet."
 }
