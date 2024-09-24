@@ -1,16 +1,9 @@
-terraform {
-  required_version = "~> 1.9"
+variable "location" {
+  type = string
+}
 
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.114"
-    }
-    http = {
-      source  = "hashicorp/http"
-      version = "~> 3.4"
-    }
-  }
+variable "resource_group_name" {
+  type = string
 }
 
 resource "azurerm_resource_group" "tftest" {
