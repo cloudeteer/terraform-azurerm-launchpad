@@ -13,14 +13,6 @@ terraform {
   }
 }
 
-variable "location" {
-  type = string
-}
-
-variable "resource_group_name" {
-  type = string
-}
-
 resource "azurerm_resource_group" "tftest" {
   name     = var.resource_group_name
   location = var.location
