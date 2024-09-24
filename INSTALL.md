@@ -106,7 +106,7 @@ After successfully registering the GitHub Action runner, proceed to apply the Te
 > Ensure the specified managed identity has the necessary permissions. Recommended: Assign the `Owner` role at a management group level.
 
 > [!CAUTION]
-> Running Terraform locally will no longer be possible after this step.
+> Running Terraform locally will no longer be possible after this step and the Azure Storage Account will be locked, so no remove is accidentally possible.
 
 Run the following command locally:
 

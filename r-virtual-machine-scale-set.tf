@@ -124,10 +124,6 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
       port     = 22
     })
   }
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "random_password" "virtual_machine_scale_set_admin_password" {
