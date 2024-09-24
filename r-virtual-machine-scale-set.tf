@@ -35,7 +35,8 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   }
 
   automatic_instance_repair {
-    enabled = true
+    enabled      = true
+    grace_period = "PT10M"
   }
 
   boot_diagnostics {
