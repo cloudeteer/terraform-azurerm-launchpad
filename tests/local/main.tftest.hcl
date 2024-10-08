@@ -13,7 +13,7 @@ mock_provider "azurerm" {
   source = "./tests/local/mocks"
 }
 
-run "use_wrong_format_repo_1" {
+run "should_fail_with_wrong_runner_github_repo_format" {
   variables {
     runner_github_repo = "cloudeteer-squadTerraform"
   }
@@ -21,7 +21,7 @@ run "use_wrong_format_repo_1" {
   expect_failures = [var.runner_github_repo]
 }
 
-run "use_wrong_format_repo_2" {
+run "should_fail_with_wrong_runner_github_repo_format_2" {
   variables {
     runner_github_repo = "cloudeteer/squadTerraform/customer"
   }
@@ -29,7 +29,7 @@ run "use_wrong_format_repo_2" {
   expect_failures = [var.runner_github_repo]
 }
 
-run "test_input_init_fail" {
+run "should_fail_on_missing_init_access_ip_address" {
   command = plan
   variables {
     init = true
@@ -37,7 +37,7 @@ run "test_input_init_fail" {
   expect_failures = [var.init_access_ip_address]
 }
 
-run "test_input_init" {
+run "should_pass_on_init_true" {
   command = plan
   variables {
     init                   = true
@@ -45,7 +45,7 @@ run "test_input_init" {
   }
 }
 
-run "use_undefined_arch" {
+run "should_fail_on_undefined_runner_arch" {
   command = plan
   variables {
     runner_arch = "arm86"
@@ -53,7 +53,7 @@ run "use_undefined_arch" {
   expect_failures = [var.runner_arch]
 }
 
-run "use_wrong_format_for_sub_id" {
+run "should_fail_on_invalid_subscription_ids_format" {
   command = plan
   variables {
     subscription_ids = ["00000000-0000-0000-0000-000000000000", "00000000000000000000000000000000"]
