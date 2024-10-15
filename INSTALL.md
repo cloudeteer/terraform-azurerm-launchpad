@@ -12,21 +12,21 @@
 
 ### 1. Create GitHub Personal Access Token (PAT)
 
-The Launchpad Virtual Machine needs permission to register GitHub runners in the squad repository. To be able to do this automatically, a GitHub Personal Access Token (PAT) is required.
+The Launchpad Virtual Machine needs permission to register GitHub runners in the desired repository. To be able to do this automatically, a GitHub Personal Access Token (PAT) is required.
 
-Login as GitHub user [cloudeteerbot](https://keepersecurity.eu/vault/#detail/4y33tgsK_Yuv8mJUXDUPrQ) and create a organization-owned GitHub PAT with the following configuration:
+Login as GitHub user (with proper permission) and create an (organization-owned) GitHub PAT with the following configuration:
 
 > [!IMPORTANT]
-> The resource owner must be the Cloudeteer organization, and it cannot be changed after the PAT is created.
+> The resource owner must be your Companies organization, and it cannot be changed after the PAT is created.
 
-| Property          | Value                                                               |
-|-------------------|---------------------------------------------------------------------|
-| Token name        | `squad<...>/launchpad` (replace `<...>` with the actual squad name) |
-| Expiration        | Custom: 1 year                                                      |
-| Description       | `Used to generate GitHub Runner access tokens`                      |
-| Resource owner:   | `cloudeteer` – The organization                                     |
-| Repository access | "Only selected repositories" – Select the Squad repository          |
-| Permissions       | Repository permissions: Actions: `read`, Administration: `write`    |
+| Property          | Value                                                             |
+|-------------------|-------------------------------------------------------------------|
+| Token name        | `<...>/launchpad` (replace `<...>` with the actual customer name) |
+| Expiration        | Custom: 1 year                                                    |
+| Description       | `Used to generate GitHub Runner access tokens`                    |
+| Resource owner:   | `<YOUR_COMPANY>` – The organization                               |
+| Repository access | "Only selected repositories" – Select the customer repository     |
+| Permissions       | Repository permissions: Actions: `read`, Administration: `write`  |
 
 <details>
 <summary>Screenshot: GitHub PAT Settings</summary>
@@ -34,30 +34,25 @@ Login as GitHub user [cloudeteerbot](https://keepersecurity.eu/vault/#detail/4y3
 ![Screenshot: GitHub PAT Settings](images/github-pat-settings.png)
 </details>
 
-Save the PAT in Keeper as custom field in the Keeper item [GitHub cloudeteerbot](https://keepersecurity.eu/vault/#detail/4y33tgsK_Yuv8mJUXDUPrQ).
+Save the PAT in at a secure place (e.g. Passwordmanager).
 
-For the initial Launchpad installation set the GitHub PAT and squad repository as `TF_VAR_` environment variables.
+For the initial Launchpad installation open your local shell
+and set the GitHub PAT and squad repository as `TF_VAR_` environment variables.
 
 ```shell
 export TF_VAR_runner_github_pat=github_pat_<...>
-export TF_VAR_runner_github_repo=cloudeteer/squad-<...>
+export TF_VAR_runner_github_repo=YOUR_COMPANY/-<...>
 ```
 
-Finally, set the GitHub secret `CDT_IAC_LAUNCHPAD_RUNNER_GITHUB_PAT` in the squad repository that contains this PAT:
+Finally, set the GitHub secret `IAC_LAUNCHPAD_RUNNER_GITHUB_PAT` in the customer repository that contains this PAT:
 
 ```shell
-gh secret set CDT_IAC_LAUNCHPAD_RUNNER_GITHUB_PAT --repo "$TF_VAR_runner_github_repo"
+gh secret set IAC_LAUNCHPAD_RUNNER_GITHUB_PAT --repo "$TF_VAR_runner_github_repo"
 ```
 
 ### 2. Initial deployment
 
-Make the following code adjustments:
-
-- CAN BE DELETED--> Set the `subscription_id` in `main.tf` file.
-- CAN BE DELETED--> Set the `ARM_TENANT_ID` in `terraform-iac-launchpad.yaml`
-- CAN BE DELETED--> Set the `tenant_id` in the `main.tf` file.
-
-Then deploy initially:
+Deploy initially:
 
 ```sh
 # This IP address will be utilized for the initial network rules for the storage account and key vault.
@@ -77,7 +72,7 @@ gh secret set CDT_IAC_LAUNCHPAD_AZURE_CLIENT_ID --repo "$TF_VAR_runner_github_re
 
 Update the following Terraform backend parameters in the `main.tf` file:
 
-- Set the `stroage_account_name` to the value of the Terraform output `tfstate_storage_account_name`
+- Set the `storage_account_name` to the value of the Terraform output `tfstate_storage_account_name`
 - Uncomment the entire `backend.azurerm` block to enable Azure backend configuration.
 
 To complete this step commit your changes and push them to remote.
