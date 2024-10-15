@@ -1,6 +1,6 @@
 resource "azurerm_resource_group" "example" {
   location = "germanywestcentral"
-  name     = "example-resource-group"
+  name     = "rg-example-dev-gwc-01"
 }
 
 resource "azurerm_virtual_network" "example" {
