@@ -5,7 +5,6 @@ resource "azurerm_virtual_network" "this" {
   tags                = var.tags
 
   address_space = var.virtual_network_address_space
-  # dns_servers   = ["10.0.0.1", "10.0.0.1"]
 }
 
 

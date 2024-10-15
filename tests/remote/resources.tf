@@ -6,8 +6,14 @@ variable "resource_group_name" {
   type = string
 }
 
+resource "random_string" "resource_group_suffix" {
+  length  = 4
+  special = false
+  upper   = false
+}
+
 resource "azurerm_resource_group" "tftest" {
-  name     = var.resource_group_name
+  name     = "${var.resource_group_name}-${random_string.resource_group_suffix.result}"
   location = var.location
 }
 

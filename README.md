@@ -24,7 +24,7 @@ This example demonstrates the usage of the launch-pad module with default settin
 ```hcl
 resource "azurerm_resource_group" "example" {
   location = "germanywestcentral"
-  name     = "example-resource-group"
+  name     = "rg-example-dev-gwc-01"
 }
 
 resource "azurerm_virtual_network" "example" {
