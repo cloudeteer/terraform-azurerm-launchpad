@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+
+set -eu
+
+# do no rerun on exists VM
+# shellcheck disable=SC2154
+if grep -q "${storage_account_hostname}" /etc/hosts; then
+  exit 0
+fi
+
+# shellcheck disable=SC1083,SC2288
+%{ if private_endpoint_storage_account_ip != "" && storage_account_hostname != "" }
+# shellcheck disable=SC2154
+echo "${private_endpoint_storage_account_ip} ${storage_account_hostname}" >>/etc/hosts
+# shellcheck disable=SC1083,SC2288
+%{ endif }
+
+# shellcheck disable=SC1083,SC2288
+%{ if private_endpoint_key_vault_ip != "" && key_vault_hostname != "" }
+# shellcheck disable=SC2154
+echo "${private_endpoint_key_vault_ip} ${key_vault_hostname}" >>/etc/hosts
+# shellcheck disable=SC1083,SC2288
+%{ endif }
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -yqq
+apt-get install -yqq curl jq unzip python3 python3-pip
+ln -s /usr/bin/python3 /usr/bin/python
+
+RUNNER_NAME=$(hostname)
+
+# Fill variables with Terraform templatefile()
+# shellcheck disable=SC2154
+GITHUB_PAT=${runner_github_pat}
+# shellcheck disable=SC2154
+RUNNER_ARCH=${runner_arch}
+# shellcheck disable=SC2154
+RUNNER_COUNT=${runner_count}
+# shellcheck disable=SC2154
+RUNNER_GITHUB_REPO=${runner_github_repo}
+# shellcheck disable=SC2154
+RUNNER_VERSION=${runner_version}
+# shellcheck disable=SC2154
+RUNNER_USER=${runner_user}
+
+# Get the latest version
+if [ "$RUNNER_VERSION" = "latest" ]; then
+  RUNNER_VERSION=$(curl -sS -L \
+    -H "Accept: application/vnd.github+json" \
+    -H "X-GitHub-Api-Version: 2022-11-28" \
+    https://api.github.com/repos/actions/runner/releases/latest | jq -r '.tag_name')
+  RUNNER_VERSION=$${RUNNER_VERSION#v}
+fi
+
+# Register new runner token (with GITHUB_PAT)
+RUNNER_TOKEN=$(curl -sS --fail -L \
+  -X POST \
+  -H "Accept: application/vnd.github+json" \
+  -H "Authorization: Bearer $GITHUB_PAT" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  "https://api.github.com/repos/$RUNNER_GITHUB_REPO/actions/runners/registration-token" | jq -r ".token")
+
+# Set up unprivileged user
+id "$RUNNER_USER" &>/dev/null || useradd --create-home --system \
+  --comment "GitHub actions runner unprivileged user" \
+  --home "/home/$RUNNER_USER" \
+  --shell /usr/sbin/nologin \
+  "$RUNNER_USER"
+
+# Create base install directory
+mkdir -p /opt/actions-runner
+cd /opt/actions-runner
+
+# Download the latest runner package
+curl -sS --fail -L -o "actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz" \
+  "https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz"
+
+for i in $(seq 1 "$RUNNER_COUNT"); do
+  current_dir=$PWD
+
+  mkdir -p "$i"
+  chown "$RUNNER_USER" "$i"
+  cd "$i"
+
+  # Extract the installer
+  sudo -u "$RUNNER_USER" -- tar xzf "../actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz"
+
+  # Disable debug output while running 3rd party scripts
+  set +x
+
+  # Configure the runner
+  sudo -u "$RUNNER_USER" -- ./config.sh --unattended --replace \
+    --url "https://github.com/$RUNNER_GITHUB_REPO" \
+    --token "$RUNNER_TOKEN" \
+    --name "$RUNNER_NAME-$i" \
+    --labels cdt-iac-launchpad
+
+  ./svc.sh install "$RUNNER_USER"
+  ./svc.sh start
+
+  # Enable debug output again
+  set -x
+  cd "$current_dir"
+
+done

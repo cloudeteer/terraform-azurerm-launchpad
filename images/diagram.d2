@@ -1,0 +1,135 @@
+# d2 --theme=0 --dark-theme=200 diagram.d2 diagram.svg
+# d2 --theme=0 diagram.d2 diagram.png
+
+title: |md
+  # IaC Launchpad – High Level Design
+| {near: top-center}
+
+**.style.font-size: 36
+(** -> **)[*].style.font-size: 42
+
+Cloudeteer Environment: {
+  label: ""
+  GitHub: {
+    shape: image
+    icon: https://icons.terrastruct.com/dev%2Fgithub.svg
+  }
+
+  readme: |md
+    ## Cloudeteer GitHub Enterprise
+    - Private Repositories
+    - Workflow Definitions
+    - Terraform Code
+    - Microsoft Entra SSO
+  |
+}
+
+Azure API: {
+  shape: image
+  icon: https://icons.terrastruct.com/azure%2FCompute%20Service%20Color%2FCloud%20Services.svg
+}
+
+Customer Azure Tenant: {
+  Managed Service Subscription: {
+    icon: https://icons.terrastruct.com/azure%2FGeneral%20Service%20Icons%2FSubscriptions.svg
+
+    Managed Identity: {
+      label: ""
+      image: {
+        label: ""
+        shape: image
+        icon: https://icons.terrastruct.com/azure%2FIdentity%20Service%20Color%2FManaged%20Identities.svg
+      }
+
+      readme: |md
+        ## Managed Identity
+        ### Permissions
+        - **Owner** on selected Management Groups
+        ### Federation
+        - Issuer: GitHub Actions
+        - Subject: github-repo:Environment
+      |
+    }
+
+    Managed Service Spoke Network: {
+      icon: https://icons.terrastruct.com/azure%2FNetworking%20Service%20Color%2FVirtual%20Networks.svg
+
+      GitHub Runner: {
+        label: GitHub\nRunner
+        shape: image
+        icon: https://icons.terrastruct.com/azure%2FCompute%20Service%20Color%2FVM%2FVM%20Scale%20Sets.svg
+      }
+
+      Storage Account: {
+        label: Storage\nAccount
+        shape: image
+        icon: https://icons.terrastruct.com/azure%2FStorage%20Service%20Color%2FStorage%20Accounts.svg
+      }
+
+      readme: |md
+        ## Terraform State
+          - Infrastrcuture encryption
+          - Storage Account Key deactivated
+          - Managed Identity Authentication
+          - Private Endpoint _only_
+          - Geo-Redundant Storage
+      |
+    }
+
+    Managed Identity -> Managed Service Spoke Network.GitHub Runner: workload identity
+  }
+
+  Management Groups: {
+    style: {
+      multiple: true
+      opacity: 0.7
+    }
+    **.style.opacity: 0.7
+
+    icon: https://icons.terrastruct.com/azure%2FGeneral%20Service%20Icons%2FManagement%20Groups.svg
+
+    Hub Subscription: {
+      icon: https://icons.terrastruct.com/azure%2FGeneral%20Service%20Icons%2FSubscriptions.svg
+
+      Virtual Network: {
+        label: Virtual\nNetwork
+        shape: image
+        icon: https://icons.terrastruct.com/azure%2FNetworking%20Service%20Color%2FVirtual%20Networks.svg
+      }
+      Network Gateway: {
+        label: Network\nGateway
+        shape: image
+        icon: https://icons.terrastruct.com/azure%2FNetworking%20Service%20Color%2FLocal%20Network%20Gateways.svg
+      }
+    }
+
+    Spoke Subscriptions: {
+      icon: https://icons.terrastruct.com/azure%2FGeneral%20Service%20Icons%2FSubscriptions.svg
+      style.multiple: true
+
+      Virtual Network: {
+        label: Virtual\nNetwork
+        shape: image
+        icon: https://icons.terrastruct.com/azure%2FNetworking%20Service%20Color%2FVirtual%20Networks.svg
+      }
+      Resource Groups: {
+        label: Resource\nGroups
+        shape: image
+        icon: https://icons.terrastruct.com/azure%2FGeneral%20Service%20Icons%2FResource%20Groups.svg
+      }
+      Bastion Host: {
+        label: Bastion\nHost
+        shape: image
+        icon: https://icons.terrastruct.com/azure%2FCompute%20Service%20Color%2FVM%2FVM.svg
+      }
+    }
+
+    Hub Subscription.Virtual Network <-> Spoke Subscriptions.Virtual Network: {style.opacity: 0}
+  }
+}
+
+Customer Azure Tenant.Managed Service Subscription.Managed Identity -> Cloudeteer Environment: federation
+Customer Azure Tenant.Managed Service Subscription.Managed Service Spoke Network.GitHub Runner -> Cloudeteer Environment: job pull
+
+Customer Azure Tenant.Managed Service Subscription.Managed Service Spoke Network.GitHub Runner -> Azure API: internet access
+Azure API -> Customer Azure Tenant

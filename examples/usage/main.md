@@ -1,0 +1,1 @@
+This example demonstrates the usage of the launch-pad module with default settings. It sets up all necessary dependencies, including a resource group, virtual network, subnet to ensure seamless deployment.
