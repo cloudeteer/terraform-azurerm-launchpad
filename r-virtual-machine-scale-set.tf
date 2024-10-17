@@ -139,4 +139,6 @@ resource "azurerm_key_vault_secret" "virtual_machine_scale_set_admin_password" {
   content_type = "Password"
   key_vault_id = azurerm_key_vault.this.id
   value        = random_password.virtual_machine_scale_set_admin_password.result
+
+  depends_on = [azurerm_role_assignment.key_vault_admin_current_user]
 }
