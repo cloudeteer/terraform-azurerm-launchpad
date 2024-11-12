@@ -12,4 +12,8 @@ terraform {
   }
 }
 
-module "example" { source = "../.." }
+module "example" {
+  source                = "../.."
+  my_runner_github_pat  = "github_pat_0000000000000000000000_00000000000000000000000000000000000000000000000000000000000"
+  my_runner_github_repo = "owner/repository"
+}
