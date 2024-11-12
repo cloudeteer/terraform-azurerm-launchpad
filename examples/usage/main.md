@@ -1,1 +1,3 @@
-This example demonstrates the usage of the launch-pad module with default settings. It sets up all necessary dependencies, including a resource group, virtual network, subnet to ensure seamless deployment.
+This example demonstrates how to deploy the Launchpad in a default scenario.
+
+The two variables, `runner_github_pat` and `runner_github_repo`, should be set at runtime during deployment using the environment variables `TF_VAR_runner_github_pat` and `TF_VAR_runner_github_repo`.
