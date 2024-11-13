@@ -27,11 +27,11 @@ resource "azurerm_role_assignment" "management_group_owner" {
 }
 
 resource "azurerm_role_assignment" "subscription_owner" {
-  for_each = toset(var.subscription_ids)
+  for_each = data.azurerm_subscription.managed_by_launchpad
 
   principal_id         = azurerm_user_assigned_identity.this.principal_id
   role_definition_name = "Owner"
-  scope                = data.azurerm_subscription.managed_by_launchpad[each.key].id
+  scope                = each.value.id
 }
 
 resource "azurerm_role_assignment" "resource_specific" {
