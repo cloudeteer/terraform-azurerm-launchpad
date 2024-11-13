@@ -1,7 +1,8 @@
 mock_data "azurerm_client_config" {
   defaults = {
-    tenant_id = "00000000-0000-0000-0000-000000000000"
-    object_id = "00000000-0000-0000-0000-000000000000"
+    object_id       = "00000000-0000-0000-0000-000000000000"
+    subscription_id = "00000000-0000-0000-0000-000000000000"
+    tenant_id       = "00000000-0000-0000-0000-000000000000"
   }
 }
 
@@ -9,6 +10,12 @@ mock_data "azurerm_management_group" {
   defaults = {
     id   = "/providers/Microsoft.Management/managementGroups/MG-MOCK"
     name = "MG-MOCK"
+  }
+}
+
+mock_data "azurerm_subscription" {
+  defaults = {
+    id = "/subscriptions/00000000-0000-0000-0000-000000000000"
   }
 }
 
