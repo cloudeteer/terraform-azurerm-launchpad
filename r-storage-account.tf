@@ -22,6 +22,7 @@ resource "azurerm_storage_account" "this" {
   account_tier             = "Standard"
   account_replication_type = "RAGRS"
 
+  allow_nested_items_to_be_public   = false
   cross_tenant_replication_enabled  = false
   default_to_oauth_authentication   = true
   https_traffic_only_enabled        = true
