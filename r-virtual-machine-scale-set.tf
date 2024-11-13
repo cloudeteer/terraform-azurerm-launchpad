@@ -56,7 +56,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   upgrade_mode                 = "Automatic"
   secure_boot_enabled          = false
   vtpm_enabled                 = false
-  overprovision                = true
+  overprovision                = false
 
   # trigger instance update
   custom_data = base64encode("#cloud-config\n#${sha256(local.github_runner_script)}")
