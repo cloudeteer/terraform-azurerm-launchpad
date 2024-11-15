@@ -173,6 +173,14 @@ Type: `list(string)`
 
 Default: `[]`
 
+### <a name="input_key_vault_virtual_network_subnet_ids"></a> [key\_vault\_virtual\_network\_subnet\_ids](#input\_key\_vault\_virtual\_network\_subnet\_ids)
+
+Description: A list of Subnet IDs that are allowed to access the Key Vault used by the Launchpad.
+
+Type: `list(string)`
+
+Default: `[]`
+
 ### <a name="input_name"></a> [name](#input\_name)
 
 Description: The base name applied to all resources created by this module.

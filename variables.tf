@@ -26,6 +26,12 @@ variable "key_vault_private_dns_zone_ids" {
   description = "A list of ID´s of DNS Zones in order to add the Private Endpoint of the Keyvault into your DNS Zones."
 }
 
+variable "key_vault_virtual_network_subnet_ids" {
+  type        = list(string)
+  description = "A list of Subnet IDs that are allowed to access the Key Vault used by the Launchpad."
+  default     = []
+}
+
 variable "location" {
   type        = string
   description = "The geographic location where the resources will be deployed. This is must be a region name supported by Azure."

@@ -4,6 +4,10 @@ resource "random_string" "kvlaunchpadprd_suffix" {
   upper   = false
 }
 
+locals {
+  key_vault_private_link_enabled = length((var.key_vault_virtual_network_subnet_ids)) > 0
+}
+
 resource "azurerm_key_vault" "this" {
   name                = join("", ["kv", var.name, "prd", local.location_short[var.location], random_string.kvlaunchpadprd_suffix.result])
   location            = var.location
@@ -19,9 +23,10 @@ resource "azurerm_key_vault" "this" {
   soft_delete_retention_days    = 30
 
   network_acls {
-    default_action = "Deny"
-    bypass         = "None"
-    ip_rules       = var.init ? [var.init_access_ip_address] : []
+    bypass                     = local.key_vault_private_link_enabled ? "AzureServices" : "None"
+    default_action             = "Deny"
+    ip_rules                   = var.init ? [var.init_access_ip_address] : []
+    virtual_network_subnet_ids = local.key_vault_private_link_enabled ? var.key_vault_virtual_network_subnet_ids : null
   }
 }
 
