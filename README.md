@@ -197,7 +197,7 @@ Description: An optional suffix appended to the base name for all resources crea
 
 Type: `string`
 
-Default: `""`
+Default: `null`
 
 ### <a name="input_runner_arch"></a> [runner\_arch](#input\_runner\_arch)
 

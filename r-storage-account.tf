@@ -13,7 +13,7 @@ resource "azurerm_management_lock" "storage_account_lock" {
 }
 
 resource "azurerm_storage_account" "this" {
-  name                = join("", ["st", var.name, "prd", local.location_short[var.location], random_string.stlaunchpadprd_suffix.result])
+  name                = join("", compact(["st", var.name, "prd", local.location_short[var.location], random_string.stlaunchpadprd_suffix.result]))
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
@@ -58,7 +58,7 @@ resource "azurerm_storage_container" "this" {
 }
 
 resource "azurerm_private_endpoint" "storage_account" {
-  name                = join("-", ["pe", azurerm_storage_account.this.name, "prd", local.location_short[var.location], var.name_suffix])
+  name                = join("-", compact(["pe", azurerm_storage_account.this.name, "prd", local.location_short[var.location], var.name_suffix]))
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags

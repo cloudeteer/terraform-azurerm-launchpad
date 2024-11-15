@@ -9,7 +9,7 @@ locals {
 }
 
 resource "azurerm_key_vault" "this" {
-  name                = join("", ["kv", var.name, "prd", local.location_short[var.location], random_string.kvlaunchpadprd_suffix.result])
+  name                = join("", compact(["kv", var.name, "prd", local.location_short[var.location], random_string.kvlaunchpadprd_suffix.result]))
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
@@ -31,7 +31,7 @@ resource "azurerm_key_vault" "this" {
 }
 
 resource "azurerm_private_endpoint" "key_vault" {
-  name                = join("-", ["pe", azurerm_key_vault.this.name, "prd", local.location_short[var.location], var.name_suffix])
+  name                = join("-", compact(["pe", azurerm_key_vault.this.name, "prd", local.location_short[var.location], var.name_suffix]))
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags

@@ -1,5 +1,5 @@
 resource "azurerm_user_assigned_identity" "this" {
-  name                = join("-", ["id", var.name, "prd", local.location_short[var.location], var.name_suffix])
+  name                = join("-", compact(["id", var.name, "prd", local.location_short[var.location], var.name_suffix]))
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags

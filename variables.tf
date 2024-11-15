@@ -55,7 +55,7 @@ variable "name_suffix" {
 
     **NOTE**: This suffix is not applied to resources that use a randomly generated suffix (e.g., Key Vault and Storage Account).
   EOD
-  default     = ""
+  default     = null
 }
 
 variable "resource_group_name" {
