@@ -173,6 +173,32 @@ Type: `list(string)`
 
 Default: `[]`
 
+### <a name="input_key_vault_virtual_network_subnet_ids"></a> [key\_vault\_virtual\_network\_subnet\_ids](#input\_key\_vault\_virtual\_network\_subnet\_ids)
+
+Description: A list of Subnet IDs that are allowed to access the Key Vault used by the Launchpad.
+
+Type: `list(string)`
+
+Default: `[]`
+
+### <a name="input_name"></a> [name](#input\_name)
+
+Description: The base name applied to all resources created by this module.
+
+Type: `string`
+
+Default: `"launchpad"`
+
+### <a name="input_name_suffix"></a> [name\_suffix](#input\_name\_suffix)
+
+Description: An optional suffix appended to the base name for all resources created by this module.
+
+**NOTE**: This suffix is not applied to resources that use a randomly generated suffix (e.g., Key Vault and Storage Account).
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_runner_arch"></a> [runner\_arch](#input\_runner\_arch)
 
 Description: The CPU architecture to run the GitHub actions runner. Can be `x64` or `arm64`.
@@ -267,6 +293,18 @@ Description: The storage account name used by the Launchpad for the Terraform st
 ### <a name="output_LAUNCHPAD_AZURE_TENANT_ID"></a> [LAUNCHPAD\_AZURE\_TENANT\_ID](#output\_LAUNCHPAD\_AZURE\_TENANT\_ID)
 
 Description: The tenant ID of the Azure user identity assigned to the Launchpad
+
+### <a name="output_key_vault_private_endpoint_private_ip_address"></a> [key\_vault\_private\_endpoint\_private\_ip\_address](#output\_key\_vault\_private\_endpoint\_private\_ip\_address)
+
+Description: The private IP address of the private endpoint used by the Key Vault.
+
+### <a name="output_network_security_group_id"></a> [network\_security\_group\_id](#output\_network\_security\_group\_id)
+
+Description: The ID of the Azure Network Security Group (NSG) associated with the Launchpad.
+
+### <a name="output_network_security_group_name"></a> [network\_security\_group\_name](#output\_network\_security\_group\_name)
+
+Description: The name of the Azure Network Security Group (NSG) associated with the Launchpad.
 
 ### <a name="output_subnet_id"></a> [subnet\_id](#output\_subnet\_id)
 

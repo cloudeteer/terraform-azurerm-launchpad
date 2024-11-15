@@ -16,14 +16,14 @@ locals {
 }
 
 resource "azurerm_linux_virtual_machine_scale_set" "this" {
-  name                = "vmss-launchpad-prd-${local.location_short[var.location]}"
+  name                = join("-", compact(["vmss", var.name, "prd", local.location_short[var.location], var.name_suffix]))
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
 
   admin_password                  = random_password.virtual_machine_scale_set_admin_password.result
   admin_username                  = local.admin_username
-  computer_name_prefix            = "vm-launchpad"
+  computer_name_prefix            = "vm-${var.name}"
   disable_password_authentication = false
   instances                       = var.runner_vm_instances
   sku                             = "Standard_D2plds_v5"

@@ -26,6 +26,12 @@ variable "key_vault_private_dns_zone_ids" {
   description = "A list of ID´s of DNS Zones in order to add the Private Endpoint of the Keyvault into your DNS Zones."
 }
 
+variable "key_vault_virtual_network_subnet_ids" {
+  type        = list(string)
+  description = "A list of Subnet IDs that are allowed to access the Key Vault used by the Launchpad."
+  default     = []
+}
+
 variable "location" {
   type        = string
   description = "The geographic location where the resources will be deployed. This is must be a region name supported by Azure."
@@ -34,6 +40,22 @@ variable "location" {
 variable "management_group_names" {
   type        = list(string)
   description = "A list of management group in order the Launchpad gets Owner-permission in these management-groups."
+}
+
+variable "name" {
+  type        = string
+  description = "The base name applied to all resources created by this module."
+  default     = "launchpad"
+}
+
+variable "name_suffix" {
+  type        = string
+  description = <<-EOD
+    An optional suffix appended to the base name for all resources created by this module.
+
+    **NOTE**: This suffix is not applied to resources that use a randomly generated suffix (e.g., Key Vault and Storage Account).
+  EOD
+  default     = null
 }
 
 variable "resource_group_name" {
