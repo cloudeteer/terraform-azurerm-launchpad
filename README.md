@@ -294,6 +294,18 @@ Description: The storage account name used by the Launchpad for the Terraform st
 
 Description: The tenant ID of the Azure user identity assigned to the Launchpad
 
+### <a name="output_key_vault_private_endpoint_private_ip_address"></a> [key\_vault\_private\_endpoint\_private\_ip\_address](#output\_key\_vault\_private\_endpoint\_private\_ip\_address)
+
+Description: The private IP address of the private endpoint used by the Key Vault.
+
+### <a name="output_network_security_group_id"></a> [network\_security\_group\_id](#output\_network\_security\_group\_id)
+
+Description: The ID of the Azure Network Security Group (NSG) associated with the Launchpad.
+
+### <a name="output_network_security_group_name"></a> [network\_security\_group\_name](#output\_network\_security\_group\_name)
+
+Description: The name of the Azure Network Security Group (NSG) associated with the Launchpad.
+
 ### <a name="output_subnet_id"></a> [subnet\_id](#output\_subnet\_id)
 
 Description: The ID of the subnet within the Virtual Network, associated with the Launchpad production environment.
