@@ -38,8 +38,18 @@ variable "management_group_names" {
 
 variable "name" {
   type        = string
-  description = "The base name used in all resources created by this module"
+  description = "The base name applied to all resources created by this module."
   default     = "launchpad"
+}
+
+variable "name_suffix" {
+  type        = string
+  description = <<-EOD
+    An optional suffix appended to the base name for all resources created by this module.
+
+    **NOTE**: This suffix is not applied to resources that use a randomly generated suffix (e.g., Key Vault and Storage Account).
+  EOD
+  default     = ""
 }
 
 variable "resource_group_name" {

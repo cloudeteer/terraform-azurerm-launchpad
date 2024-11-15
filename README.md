@@ -175,11 +175,21 @@ Default: `[]`
 
 ### <a name="input_name"></a> [name](#input\_name)
 
-Description: The base name used in all resources created by this module
+Description: The base name applied to all resources created by this module.
 
 Type: `string`
 
 Default: `"launchpad"`
+
+### <a name="input_name_suffix"></a> [name\_suffix](#input\_name\_suffix)
+
+Description: An optional suffix appended to the base name for all resources created by this module.
+
+**NOTE**: This suffix is not applied to resources that use a randomly generated suffix (e.g., Key Vault and Storage Account).
+
+Type: `string`
+
+Default: `""`
 
 ### <a name="input_runner_arch"></a> [runner\_arch](#input\_runner\_arch)
 

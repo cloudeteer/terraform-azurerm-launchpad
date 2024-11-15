@@ -16,7 +16,7 @@ locals {
 }
 
 resource "azurerm_linux_virtual_machine_scale_set" "this" {
-  name                = "vmss-${var.name}-prd-${local.location_short[var.location]}"
+  name                = join("-", ["vmss", var.name, "prd", local.location_short[var.location], var.name_suffix])
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags

@@ -1,5 +1,5 @@
 resource "azurerm_user_assigned_identity" "this" {
-  name                = "id-${var.name}-prd-${local.location_short[var.location]}"
+  name                = join("-", ["id", var.name, "prd", local.location_short[var.location], var.name_suffix])
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags

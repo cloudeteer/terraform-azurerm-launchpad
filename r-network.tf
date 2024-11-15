@@ -1,5 +1,5 @@
 resource "azurerm_virtual_network" "this" {
-  name                = "vnet-${var.name}-prd-${local.location_short[var.location]}"
+  name                = join("-", ["vnet", var.name, "prd", local.location_short[var.location], var.name_suffix])
   resource_group_name = var.resource_group_name
   location            = var.location
   tags                = var.tags
@@ -9,14 +9,14 @@ resource "azurerm_virtual_network" "this" {
 
 
 resource "azurerm_subnet" "this" {
-  name                 = "snet-${var.name}-prd-${local.location_short[var.location]}"
+  name                 = join("-", ["snet", var.name, "prd", local.location_short[var.location], var.name_suffix])
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = var.subnet_address_prefixes
 }
 
 resource "azurerm_network_security_group" "this" {
-  name                = "nsg-${var.name}-prd-${local.location_short[var.location]}"
+  name                = join("-", ["nsg", var.name, "prd", local.location_short[var.location], var.name_suffix])
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
