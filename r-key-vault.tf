@@ -5,7 +5,7 @@ resource "random_string" "kvlaunchpadprd_suffix" {
 }
 
 resource "azurerm_key_vault" "this" {
-  name                = "kvlaunchpadprd${local.location_short[var.location]}${random_string.kvlaunchpadprd_suffix.result}"
+  name                = "kv${var.name}prd${local.location_short[var.location]}${random_string.kvlaunchpadprd_suffix.result}"
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags

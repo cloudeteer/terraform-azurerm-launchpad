@@ -1,5 +1,5 @@
 resource "azurerm_virtual_network" "this" {
-  name                = "vnet-launchpad-prd-${local.location_short[var.location]}"
+  name                = "vnet-${var.name}-prd-${local.location_short[var.location]}"
   resource_group_name = var.resource_group_name
   location            = var.location
   tags                = var.tags
@@ -9,14 +9,14 @@ resource "azurerm_virtual_network" "this" {
 
 
 resource "azurerm_subnet" "this" {
-  name                 = "snet-launchpad-prd-${local.location_short[var.location]}"
+  name                 = "snet-${var.name}-prd-${local.location_short[var.location]}"
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = var.subnet_address_prefixes
 }
 
 resource "azurerm_network_security_group" "this" {
-  name                = "nsg-launchpad-prd-${local.location_short[var.location]}"
+  name                = "nsg-${var.name}-prd-${local.location_short[var.location]}"
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags

@@ -173,6 +173,14 @@ Type: `list(string)`
 
 Default: `[]`
 
+### <a name="input_name"></a> [name](#input\_name)
+
+Description: The base name used in all resources created by this module
+
+Type: `string`
+
+Default: `"launchpad"`
+
 ### <a name="input_runner_arch"></a> [runner\_arch](#input\_runner\_arch)
 
 Description: The CPU architecture to run the GitHub actions runner. Can be `x64` or `arm64`.

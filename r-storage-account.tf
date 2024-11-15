@@ -13,7 +13,7 @@ resource "azurerm_management_lock" "storage_account_lock" {
 }
 
 resource "azurerm_storage_account" "this" {
-  name                = "stlaunchpadprd${local.location_short[var.location]}${random_string.stlaunchpadprd_suffix.result}"
+  name                = "st${var.name}prd${local.location_short[var.location]}${random_string.stlaunchpadprd_suffix.result}"
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags

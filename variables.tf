@@ -36,6 +36,12 @@ variable "management_group_names" {
   description = "A list of management group in order the Launchpad gets Owner-permission in these management-groups."
 }
 
+variable "name" {
+  type        = string
+  description = "The base name used in all resources created by this module"
+  default     = "launchpad"
+}
+
 variable "resource_group_name" {
   description = "The name of the resource group in which the virtual machine should exist. Changing this forces a new resource to be created."
   type        = string
