@@ -29,11 +29,6 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   sku                             = "Standard_D2plds_v5"
   encryption_at_host_enabled      = false
 
-  automatic_os_upgrade_policy {
-    disable_automatic_rollback  = false
-    enable_automatic_os_upgrade = false
-  }
-
   automatic_instance_repair {
     enabled      = true
     grace_period = "PT10M"
@@ -43,17 +38,10 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     storage_account_uri = null
   }
 
-  rolling_upgrade_policy {
-    max_batch_instance_percent              = 100
-    max_unhealthy_instance_percent          = 100
-    max_unhealthy_upgraded_instance_percent = 100
-    pause_time_between_batches              = "PT0M"
-  }
-
   extension_operations_enabled = true
   extensions_time_budget       = "PT15M"
   provision_vm_agent           = true
-  upgrade_mode                 = "Automatic"
+  upgrade_mode                 = "Manual"
   secure_boot_enabled          = false
   vtpm_enabled                 = false
   overprovision                = false
