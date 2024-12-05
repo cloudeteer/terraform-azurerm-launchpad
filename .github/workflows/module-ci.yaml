@@ -1,26 +1,22 @@
 name: module-ci
 on:
+  workflow_dispatch:
   schedule:
     - cron: "0 0 * * 0" # weekly on Sunday at 00:00
-  push:
-    branches:
-      - main
   pull_request:
     types:
       - opened
       - edited
       - synchronize
-      - labeled
-      - unlabeled
+      - ready_for_review
 
 jobs:
   module-ci:
     uses: cloudeteer/terraform-governance/.github/workflows/module-ci.yaml@main
     permissions:
-      contents: write
-      id-token: write
+      contents: read
       issues: write
-      pull-requests: read
+      id-token: write
     secrets:
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
