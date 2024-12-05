@@ -1,0 +1,21 @@
+name: module-manage-github
+on:
+  push:
+    branches:
+      - main
+  issues:
+    types:
+      - opened
+  pull_request:
+    types:
+      - opened
+      - labeled
+      - unlabeled
+
+jobs:
+  module-manage-github:
+    uses: cloudeteer/terraform-governance/.github/workflows/module-github.yaml@main
+    permissions:
+      contents: write
+      pull-requests: read
+    secrets: inherit
