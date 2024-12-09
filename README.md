@@ -101,12 +101,6 @@ Description: The geographic location where the resources will be deployed. This 
 
 Type: `string`
 
-### <a name="input_management_group_names"></a> [management\_group\_names](#input\_management\_group\_names)
-
-Description: A list of management group in order the Launchpad gets Owner-permission in these management-groups.
-
-Type: `list(string)`
-
 ### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
 
 Description: The name of the resource group in which the virtual machine should exist. Changing this forces a new resource to be created.
@@ -176,6 +170,14 @@ Default: `[]`
 ### <a name="input_key_vault_virtual_network_subnet_ids"></a> [key\_vault\_virtual\_network\_subnet\_ids](#input\_key\_vault\_virtual\_network\_subnet\_ids)
 
 Description: A list of Subnet IDs that are allowed to access the Key Vault used by the Launchpad.
+
+Type: `list(string)`
+
+Default: `[]`
+
+### <a name="input_management_group_names"></a> [management\_group\_names](#input\_management\_group\_names)
+
+Description: A list of management group in order the Launchpad gets Owner-permission in these management-groups.
 
 Type: `list(string)`
 
