@@ -40,7 +40,7 @@ variable "location" {
 variable "management_group_names" {
   type        = list(string)
   description = "A list of management group in order the Launchpad gets Owner-permission in these management-groups."
-  default     = [ ]
+  default     = []
 }
 
 variable "name" {
