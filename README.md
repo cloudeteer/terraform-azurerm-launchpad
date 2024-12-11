@@ -264,6 +264,23 @@ Type: `string`
 
 Default: `1`
 
+### <a name="input_service_endpoints"></a> [service\_endpoints](#input\_service\_endpoints)
+
+Description:   The list of Service endpoints to associate with the subnet. Possible values include: `Microsoft.AzureActiveDirectory`, `Microsoft.AzureCosmosDB`, `Microsoft.ContainerRegistry`, `Microsoft.EventHub`, `Microsoft.KeyVault`, `Microsoft.ServiceBus`, `Microsoft.Sql`, `Microsoft.Storage`, `Microsoft.Storage`.Global and `Microsoft.Web`.
+
+**NOTE**: In order to use `Microsoft.Storage.Global` service endpoint (which allows access to virtual networks in other regions), you must enable the `AllowGlobalTagsForStorage` feature in your subscription. This is currently a preview feature, please see the [official documentation](https://learn.microsoft.com/en-us/azure/storage/common/storage-network-security?tabs=azure-cli#enabling-access-to-virtual-networks-in-other-regions-preview) for more information.
+
+Type: `list(string)`
+
+Default:
+
+```json
+[
+  "Microsoft.KeyVault",
+  "Microsoft.Storage"
+]
+```
+
 ### <a name="input_subscription_ids"></a> [subscription\_ids](#input\_subscription\_ids)
 
 Description: A list of subscription IDs, which the Launchpad will manage.Each must be exactly 36 characters long.
