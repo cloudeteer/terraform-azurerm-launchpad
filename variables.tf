@@ -195,3 +195,8 @@ variable "key_vault_public_access_ip_addresses" {
   type    = list(string)
   default = []
 }
+
+variable "assign_owner_on_current_subscription" {
+type = bool
+default = true
+}
