@@ -30,11 +30,11 @@ resource "azurerm_storage_account" "this" {
   is_hns_enabled                    = false
   large_file_share_enabled          = false
   min_tls_version                   = "TLS1_2"
-  public_network_access_enabled     = var.init ? true : false
+  public_network_access_enabled     = var.storage_account_public_access
   shared_access_key_enabled         = false
 
   dynamic "network_rules" {
-    for_each = var.init ? [true] : []
+    for_each = var.storage_account_public_access ? [] : [true]
     content {
       default_action = "Deny"
       ip_rules       = [var.init_access_ip_address]
@@ -58,12 +58,14 @@ resource "azurerm_storage_container" "this" {
 }
 
 resource "azurerm_private_endpoint" "storage_account" {
+  count = length(azurerm_subnet.this)
+
   name                = join("-", compact(["pe", azurerm_storage_account.this.name, "prd", local.location_short[var.location], var.name_suffix]))
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
 
-  subnet_id = azurerm_subnet.this.id
+  subnet_id = azurerm_subnet.this[0].id
 
   private_service_connection {
     name                           = "blob"

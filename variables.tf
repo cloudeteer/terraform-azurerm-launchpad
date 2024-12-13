@@ -94,15 +94,17 @@ variable "runner_github_pat" {
   type        = string
   sensitive   = true
   description = "GitHub PAT that will be used to register GitHub Action Runner tokens"
+  default     = null
 }
 
 variable "runner_github_repo" {
+  default     = null
   type        = string
   description = "Specify the GitHub repository owner and name seperated by `/` to register the action runner. e.g. `cloudeteer/squad-customer`"
 
   validation {
     error_message = "You must specify the GitHub organization e.g. cloudeteer/squad-customer."
-    condition     = length(split("/", var.runner_github_repo)) == 2
+    condition     = var.runner_github_repo == null ? true : length(split("/", var.runner_github_repo)) == 2
   }
 }
 
@@ -144,6 +146,7 @@ variable "service_endpoints" {
 variable "subnet_address_prefixes" {
   type        = list(string)
   description = "A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network."
+  default     = null
 }
 
 variable "subscription_ids" {
@@ -165,6 +168,30 @@ variable "tags" {
 }
 
 variable "virtual_network_address_space" {
+  default     = null
   type        = list(string)
   description = "A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet."
+}
+
+variable "create_private_runner" {
+  type    = bool
+  default = true
+}
+
+
+variable "storage_account_public_access" {
+  type    = bool
+  default = false
+
+}
+
+
+variable "key_vault_public_access" {
+  type    = bool
+  default = false
+}
+
+variable "key_vault_public_access_ip_addresses" {
+  type    = list(string)
+  default = []
 }

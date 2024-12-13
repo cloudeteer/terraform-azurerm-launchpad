@@ -14,36 +14,36 @@ output "LAUNCHPAD_AZURE_TENANT_ID" {
 }
 
 output "key_vault_private_endpoint_private_ip_address" {
-  value       = one(azurerm_private_endpoint.key_vault.private_service_connection[*].private_ip_address)
+  value       = length(azurerm_private_endpoint.key_vault) == 1 ? one(azurerm_private_endpoint.key_vault[0].private_service_connection[*].private_ip_address) : null
   description = "The private IP address of the private endpoint used by the Key Vault."
 }
 
 output "network_security_group_id" {
-  value       = azurerm_network_security_group.this.id
+  value       = length(azurerm_network_security_group.this) == 1 ? azurerm_network_security_group.this[0].id : null
   description = "The ID of the Azure Network Security Group (NSG) associated with the Launchpad."
 }
 
 output "network_security_group_name" {
-  value       = azurerm_network_security_group.this.name
+  value       = length(azurerm_network_security_group.this) == 1 ? azurerm_network_security_group.this[0].name : null
   description = "The name of the Azure Network Security Group (NSG) associated with the Launchpad."
 }
 
 output "subnet_id" {
-  value       = azurerm_subnet.this.id
+  value       = length(azurerm_subnet.this) == 1 ? azurerm_subnet.this[0].id : null
   description = "The ID of the subnet within the Virtual Network, associated with the Launchpad production environment."
 }
 
 output "subnet_name" {
-  value       = azurerm_subnet.this.name
+  value       = length(azurerm_subnet.this) == 1 ? azurerm_subnet.this[0].name : null
   description = "The name of the subnet within the Virtual Network, associated with the Launchpad production environment."
 }
 
 output "virtual_network_id" {
-  value       = azurerm_virtual_network.this.id
+  value       = length(azurerm_virtual_network.this) == 1 ? azurerm_virtual_network.this[0].id : null
   description = "The ID of the Azure Virtual Network (VNet) associated with the Launchpad."
 }
 
 output "virtual_network_name" {
-  value       = azurerm_virtual_network.this.name
+  value       = length(azurerm_virtual_network.this) == 1 ? azurerm_virtual_network.this[0].name : null
   description = "The name of the Azure Virtual Network (VNet) associated with the Launchpad."
 }

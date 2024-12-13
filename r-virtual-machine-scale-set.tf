@@ -1,9 +1,9 @@
 locals {
   admin_username = "azureadmin"
-  github_runner_script = base64gzip(templatefile("${path.module}/assets/install_github_actions_runner.sh.tftpl", {
+  github_runner_script = var.create_private_runner ? base64gzip(templatefile("${path.module}/assets/install_github_actions_runner.sh.tftpl", {
     key_vault_hostname                  = "${azurerm_key_vault.this.name}.vault.azure.net"
-    private_endpoint_key_vault_ip       = one(azurerm_private_endpoint.key_vault.private_service_connection[*].private_ip_address)
-    private_endpoint_storage_account_ip = one(azurerm_private_endpoint.storage_account.private_service_connection[*].private_ip_address)
+    private_endpoint_key_vault_ip       = one(azurerm_private_endpoint.key_vault[0].private_service_connection[*].private_ip_address)
+    private_endpoint_storage_account_ip = one(azurerm_private_endpoint.storage_account[0].private_service_connection[*].private_ip_address)
     storage_account_hostname            = azurerm_storage_account.this.primary_blob_host
 
     runner_arch        = var.runner_arch
@@ -12,16 +12,18 @@ locals {
     runner_github_repo = var.runner_github_repo
     runner_user        = var.runner_user
     runner_version     = var.runner_version
-  }))
+  })) : null
 }
 
 resource "azurerm_linux_virtual_machine_scale_set" "this" {
+  count = var.create_private_runner ? 1 : 0
+
   name                = join("-", compact(["vmss", var.name, "prd", local.location_short[var.location], var.name_suffix]))
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
 
-  admin_password                  = random_password.virtual_machine_scale_set_admin_password.result
+  admin_password                  = random_password.virtual_machine_scale_set_admin_password[0].result
   admin_username                  = local.admin_username
   computer_name_prefix            = "vm-${var.name}"
   disable_password_authentication = false
@@ -86,7 +88,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     ip_configuration {
       name      = "internal"
       primary   = true
-      subnet_id = azurerm_subnet.this.id
+      subnet_id = azurerm_subnet.this[0].id
 
       dynamic "public_ip_address" {
         for_each = var.runner_public_ip_address ? [true] : []
@@ -127,18 +129,20 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
 }
 
 resource "random_password" "virtual_machine_scale_set_admin_password" {
+  count  = var.create_private_runner ? 1 : 0
   length = 30
 }
 
 #trivy:ignore:avd-azu-0017
 #trivy:ignore:avd-azu-0013
 resource "azurerm_key_vault_secret" "virtual_machine_scale_set_admin_password" {
+  count = var.create_private_runner ? 1 : 0
 
-  name = "${azurerm_linux_virtual_machine_scale_set.this.name}-${azurerm_linux_virtual_machine_scale_set.this.admin_username}-password"
+  name = "${azurerm_linux_virtual_machine_scale_set.this[0].name}-${azurerm_linux_virtual_machine_scale_set.this[0].admin_username}-password"
 
   content_type = "Password"
   key_vault_id = azurerm_key_vault.this.id
-  value        = random_password.virtual_machine_scale_set_admin_password.result
+  value        = random_password.virtual_machine_scale_set_admin_password[0].result
 
   depends_on = [azurerm_role_assignment.key_vault_admin_current_user]
 }

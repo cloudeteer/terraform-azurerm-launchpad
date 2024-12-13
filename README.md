@@ -107,33 +107,17 @@ Description: The name of the resource group in which the virtual machine should 
 
 Type: `string`
 
-### <a name="input_runner_github_pat"></a> [runner\_github\_pat](#input\_runner\_github\_pat)
-
-Description: GitHub PAT that will be used to register GitHub Action Runner tokens
-
-Type: `string`
-
-### <a name="input_runner_github_repo"></a> [runner\_github\_repo](#input\_runner\_github\_repo)
-
-Description: Specify the GitHub repository owner and name seperated by `/` to register the action runner. e.g. `cloudeteer/squad-customer`
-
-Type: `string`
-
-### <a name="input_subnet_address_prefixes"></a> [subnet\_address\_prefixes](#input\_subnet\_address\_prefixes)
-
-Description: A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network.
-
-Type: `list(string)`
-
-### <a name="input_virtual_network_address_space"></a> [virtual\_network\_address\_space](#input\_virtual\_network\_address\_space)
-
-Description: A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet.
-
-Type: `list(string)`
-
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### <a name="input_create_private_runner"></a> [create\_private\_runner](#input\_create\_private\_runner)
+
+Description: n/a
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_init"></a> [init](#input\_init)
 
@@ -162,6 +146,22 @@ Default: `null`
 ### <a name="input_key_vault_private_dns_zone_ids"></a> [key\_vault\_private\_dns\_zone\_ids](#input\_key\_vault\_private\_dns\_zone\_ids)
 
 Description: A list of ID´s of DNS Zones in order to add the Private Endpoint of the Keyvault into your DNS Zones.
+
+Type: `list(string)`
+
+Default: `[]`
+
+### <a name="input_key_vault_public_access"></a> [key\_vault\_public\_access](#input\_key\_vault\_public\_access)
+
+Description: n/a
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_key_vault_public_access_ip_addresses"></a> [key\_vault\_public\_access\_ip\_addresses](#input\_key\_vault\_public\_access\_ip\_addresses)
+
+Description: n/a
 
 Type: `list(string)`
 
@@ -232,6 +232,22 @@ Default:
 }
 ```
 
+### <a name="input_runner_github_pat"></a> [runner\_github\_pat](#input\_runner\_github\_pat)
+
+Description: GitHub PAT that will be used to register GitHub Action Runner tokens
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_runner_github_repo"></a> [runner\_github\_repo](#input\_runner\_github\_repo)
+
+Description: Specify the GitHub repository owner and name seperated by `/` to register the action runner. e.g. `cloudeteer/squad-customer`
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_runner_public_ip_address"></a> [runner\_public\_ip\_address](#input\_runner\_public\_ip\_address)
 
 Description: Set the value of this variable to `true` if you want to allocate a public IP address to each instance within the Virtual Machine Scale Set. Enabling this option may be necessary to establish internet access when a direct connection to a HUB is currently unavailable.
@@ -281,6 +297,22 @@ Default:
 ]
 ```
 
+### <a name="input_storage_account_public_access"></a> [storage\_account\_public\_access](#input\_storage\_account\_public\_access)
+
+Description: n/a
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_subnet_address_prefixes"></a> [subnet\_address\_prefixes](#input\_subnet\_address\_prefixes)
+
+Description: A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network.
+
+Type: `list(string)`
+
+Default: `null`
+
 ### <a name="input_subscription_ids"></a> [subscription\_ids](#input\_subscription\_ids)
 
 Description: A list of subscription IDs, which the Launchpad will manage.Each must be exactly 36 characters long.
@@ -296,6 +328,14 @@ Description: A mapping of tags which should be assigned to all resources in this
 Type: `map(string)`
 
 Default: `{}`
+
+### <a name="input_virtual_network_address_space"></a> [virtual\_network\_address\_space](#input\_virtual\_network\_address\_space)
+
+Description: A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet.
+
+Type: `list(string)`
+
+Default: `null`
 
 ## Outputs
 

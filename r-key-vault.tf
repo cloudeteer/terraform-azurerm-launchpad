@@ -4,10 +4,6 @@ resource "random_string" "kvlaunchpadprd_suffix" {
   upper   = false
 }
 
-locals {
-  key_vault_private_link_enabled = length((var.key_vault_virtual_network_subnet_ids)) > 0
-}
-
 resource "azurerm_key_vault" "this" {
   name                = join("", compact(["kv", var.name, "prd", local.location_short[var.location], random_string.kvlaunchpadprd_suffix.result]))
   location            = var.location
@@ -17,26 +13,31 @@ resource "azurerm_key_vault" "this" {
   tenant_id = data.azurerm_client_config.current.tenant_id
 
   enable_rbac_authorization     = true
-  public_network_access_enabled = var.init ? true : false
+  public_network_access_enabled = var.key_vault_public_access
   purge_protection_enabled      = true
   sku_name                      = "standard"
   soft_delete_retention_days    = 30
 
-  network_acls {
-    bypass                     = local.key_vault_private_link_enabled ? "AzureServices" : "None"
-    default_action             = "Deny"
-    ip_rules                   = var.init ? [var.init_access_ip_address] : []
-    virtual_network_subnet_ids = local.key_vault_private_link_enabled ? var.key_vault_virtual_network_subnet_ids : null
+  dynamic "network_acls" {
+    for_each = var.key_vault_public_access ? [] : [true]
+    content {
+      bypass                     = "AzureServices"
+      default_action             = "Deny"
+      ip_rules                   = var.key_vault_public_access_ip_addresses
+      virtual_network_subnet_ids = key_vault_virtual_network_subnet_ids
+    }
   }
 }
 
 resource "azurerm_private_endpoint" "key_vault" {
+  count = length(azurerm_subnet.this)
+
   name                = join("-", compact(["pe", azurerm_key_vault.this.name, "prd", local.location_short[var.location], var.name_suffix]))
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
 
-  subnet_id = azurerm_subnet.this.id
+  subnet_id = azurerm_subnet.this[0].id
 
   private_service_connection {
     name                           = "vault"
