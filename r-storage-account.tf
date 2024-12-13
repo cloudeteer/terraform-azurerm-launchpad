@@ -25,7 +25,7 @@ resource "random_string" "stlaunchpadprd_suffix" {
 }
 
 resource "azurerm_management_lock" "storage_account_lock" {
-  count      = var.init || !var.storage_account_deletion_lock ? 0 : 1
+  count      = !var.storage_account_deletion_lock ? 0 : 1
   name       = "storage_account_lock"
   scope      = azurerm_storage_account.this.id
   lock_level = "CanNotDelete"
@@ -50,14 +50,14 @@ resource "azurerm_storage_account" "this" {
   is_hns_enabled                    = false
   large_file_share_enabled          = false
   min_tls_version                   = "TLS1_2"
-  public_network_access_enabled     = var.init ? true : false
+  public_network_access_enabled     = var.storage_account_public_network_access_enabled
   shared_access_key_enabled         = false
 
   dynamic "network_rules" {
-    for_each = var.init ? [true] : []
+    for_each = var.storage_account_public_network_access_enabled && length(var.storage_account_public_network_access_ip_rules) > 0 ? [true] : []
     content {
       default_action = "Deny"
-      ip_rules       = [var.init_access_ip_address]
+      ip_rules       = var.storage_account_public_network_access_ip_rules
       bypass         = ["AzureServices"]
     }
   }
@@ -96,10 +96,10 @@ resource "azurerm_private_endpoint" "storage_account" {
 }
 
 resource "azurerm_role_assignment" "storage_account_blob_owner_current_user" {
-  count = var.init ? 1 : 0
+  count = var.grant_access_to_storage_account ? 1 : 0
 
   description          = "Temporary role assignment. Delete this assignment if unsure why it is still existing."
-  principal_id         = local.init_access_azure_principal_id
+  principal_id         = local.grant_access_to_azure_principal_id
   role_definition_name = "Storage Blob Data Owner"
   scope                = azurerm_storage_account.this.id
 }

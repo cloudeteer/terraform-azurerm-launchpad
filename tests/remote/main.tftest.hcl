@@ -38,7 +38,10 @@ run "deploy_module" {
     runner_github_repo  = "cloudeteer/terraform-azurerm-launchpad"
 
     # Initial deployment
-    init                   = true
-    init_access_ip_address = run.setup_tests.init_access_ip_address
+    init                                           = true
+    key_vault_public_network_access_enabled        = true
+    key_vault_public_network_access_ip_rules       = [run.setup_tests.init_access_ip_address]
+    storage_account_public_network_access_enabled  = true
+    storage_account_public_network_access_ip_rules = [run.setup_tests.init_access_ip_address]
   }
 }

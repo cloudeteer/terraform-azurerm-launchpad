@@ -61,30 +61,22 @@ variable "create_subnet" {
   }
 }
 
-variable "init" {
+variable "grant_access_to_azure_principal_id" {
+  description = "Set the Azure Principal ID which will be given access to the storage account and key vault."
+  type        = string
+  default     = null
+}
+
+variable "grant_access_to_key_vault" {
   type        = bool
   default     = false
-  description = "Is used for initiating the module itself for the first time. For more information please go here https://github.com/cloudeteer/terraform-azurerm-launchpad/blob/main/INSTALL.md "
+  description = "Determines whether to grant access to the Key Vault for the Azure Principal ID specified in `grant_access_to_azure_principal_id`."
 }
 
-variable "init_access_azure_principal_id" {
-  description = <<-EOD
-    Set the Azure Principal ID which will be given access to the storage account and key vault.
-    **NOTE**: This is only required when `init` is set to `true`.
-  EOD
-  type        = string
-  default     = null
-}
-
-variable "init_access_ip_address" {
-  type        = string
-  default     = null
-  description = "Set the IP Address of your current public IP in order to access the new created resources. For more information please go here https://github.com/cloudeteer/terraform-azurerm-launchpad/blob/main/INSTALL.md "
-
-  validation {
-    condition     = (var.init && var.init_access_ip_address != null) || (!var.init && var.init_access_ip_address == null)
-    error_message = "init_access_ip_address ERROR!"
-  }
+variable "grant_access_to_storage_account" {
+  type        = bool
+  default     = false
+  description = "Determines whether to grant access to the Storage Account for the Azure Principal ID specified in `grant_access_to_azure_principal_id` or automatically determined for the current user executing Terraform."
 }
 
 variable "key_vault_deletion_lock" {
@@ -97,6 +89,18 @@ variable "key_vault_private_dns_zone_ids" {
   type        = list(string)
   default     = []
   description = "A list of ID´s of DNS Zones in order to add the Private Endpoint of the Keyvault into your DNS Zones."
+}
+
+variable "key_vault_public_network_access_enabled" {
+  type        = bool
+  description = "Specifies whether public access is allowed for the Key Vault deployed by this module. Use `key_vault_public_access_ip_addresses` to restrict access to specific IP addresses when enabled."
+  default     = false
+}
+
+variable "key_vault_public_network_access_ip_rules" {
+  type        = list(string)
+  description = "A list of IP addresses to restrict public access to the Key Vault if `key_vault_public_access` is set to true. If empty, access is unrestricted when public access is enabled."
+  default     = []
 }
 
 variable "key_vault_virtual_network_subnet_ids" {
@@ -249,6 +253,18 @@ variable "storage_account_deletion_lock" {
   type        = bool
   description = "Whether a deletion lock should be applied to the Storage Account to prevent accidental deletion and ensure data loss prevention."
   default     = true
+}
+
+variable "storage_account_public_network_access_enabled" {
+  type        = bool
+  description = "Specifies whether public access is allowed for the Storage Account deployed by this module. Use `storage_account_public_access_ip_addresses` to restrict access to specific IP addresses when enabled."
+  default     = false
+}
+
+variable "storage_account_public_network_access_ip_rules" {
+  type        = list(string)
+  description = "A list of IP addresses to restrict public access to the Storage Account if `storage_account_public_access` is set to true. If empty, access is unrestricted when public access is enabled."
+  default     = []
 }
 
 variable "subnet_address_prefixes" {

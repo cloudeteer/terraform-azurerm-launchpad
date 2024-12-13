@@ -23,19 +23,14 @@ run "should_fail_with_wrong_runner_github_repo_format_2" {
   expect_failures = [var.runner_github_repo]
 }
 
-run "should_fail_on_missing_init_access_ip_address" {
-  command = plan
-  variables {
-    init = true
-  }
-  expect_failures = [var.init_access_ip_address]
-}
-
 run "should_pass_on_init_true" {
   command = plan
   variables {
-    init                   = true
-    init_access_ip_address = "127.0.0.1"
+    init                                           = true
+    key_vault_public_network_access_enabled        = true
+    key_vault_public_network_access_ip_rules       = ["127.0.0.1"]
+    storage_account_public_network_access_enabled  = true
+    storage_account_public_network_access_ip_rules = ["127.0.0.1"]
   }
 }
 

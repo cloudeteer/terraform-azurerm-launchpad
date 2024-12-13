@@ -165,30 +165,29 @@ Type: `bool`
 
 Default: `true`
 
-### <a name="input_init"></a> [init](#input\_init)
+### <a name="input_grant_access_to_azure_principal_id"></a> [grant\_access\_to\_azure\_principal\_id](#input\_grant\_access\_to\_azure\_principal\_id)
 
-Description: Is used for initiating the module itself for the first time. For more information please go here https://github.com/cloudeteer/terraform-azurerm-launchpad/blob/main/INSTALL.md
+Description: Set the Azure Principal ID which will be given access to the storage account and key vault.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_grant_access_to_key_vault"></a> [grant\_access\_to\_key\_vault](#input\_grant\_access\_to\_key\_vault)
+
+Description: Determines whether to grant access to the Key Vault for the Azure Principal ID specified in `grant_access_to_azure_principal_id`.
 
 Type: `bool`
 
 Default: `false`
 
-### <a name="input_init_access_azure_principal_id"></a> [init\_access\_azure\_principal\_id](#input\_init\_access\_azure\_principal\_id)
+### <a name="input_grant_access_to_storage_account"></a> [grant\_access\_to\_storage\_account](#input\_grant\_access\_to\_storage\_account)
 
-Description: Set the Azure Principal ID which will be given access to the storage account and key vault.
-**NOTE**: This is only required when `init` is set to `true`.
+Description: Determines whether to grant access to the Storage Account for the Azure Principal ID specified in `grant_access_to_azure_principal_id` or automatically determined for the current user executing Terraform.
 
-Type: `string`
+Type: `bool`
 
-Default: `null`
-
-### <a name="input_init_access_ip_address"></a> [init\_access\_ip\_address](#input\_init\_access\_ip\_address)
-
-Description: Set the IP Address of your current public IP in order to access the new created resources. For more information please go here https://github.com/cloudeteer/terraform-azurerm-launchpad/blob/main/INSTALL.md
-
-Type: `string`
-
-Default: `null`
+Default: `false`
 
 ### <a name="input_key_vault_deletion_lock"></a> [key\_vault\_deletion\_lock](#input\_key\_vault\_deletion\_lock)
 
@@ -201,6 +200,22 @@ Default: `true`
 ### <a name="input_key_vault_private_dns_zone_ids"></a> [key\_vault\_private\_dns\_zone\_ids](#input\_key\_vault\_private\_dns\_zone\_ids)
 
 Description: A list of ID´s of DNS Zones in order to add the Private Endpoint of the Keyvault into your DNS Zones.
+
+Type: `list(string)`
+
+Default: `[]`
+
+### <a name="input_key_vault_public_network_access_enabled"></a> [key\_vault\_public\_network\_access\_enabled](#input\_key\_vault\_public\_network\_access\_enabled)
+
+Description: Specifies whether public access is allowed for the Key Vault deployed by this module. Use `key_vault_public_access_ip_addresses` to restrict access to specific IP addresses when enabled.
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_key_vault_public_network_access_ip_rules"></a> [key\_vault\_public\_network\_access\_ip\_rules](#input\_key\_vault\_public\_network\_access\_ip\_rules)
+
+Description: A list of IP addresses to restrict public access to the Key Vault if `key_vault_public_access` is set to true. If empty, access is unrestricted when public access is enabled.
 
 Type: `list(string)`
 
@@ -366,6 +381,22 @@ Description: Whether a deletion lock should be applied to the Storage Account to
 Type: `bool`
 
 Default: `true`
+
+### <a name="input_storage_account_public_network_access_enabled"></a> [storage\_account\_public\_network\_access\_enabled](#input\_storage\_account\_public\_network\_access\_enabled)
+
+Description: Specifies whether public access is allowed for the Storage Account deployed by this module. Use `storage_account_public_access_ip_addresses` to restrict access to specific IP addresses when enabled.
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_storage_account_public_network_access_ip_rules"></a> [storage\_account\_public\_network\_access\_ip\_rules](#input\_storage\_account\_public\_network\_access\_ip\_rules)
+
+Description: A list of IP addresses to restrict public access to the Storage Account if `storage_account_public_access` is set to true. If empty, access is unrestricted when public access is enabled.
+
+Type: `list(string)`
+
+Default: `[]`
 
 ### <a name="input_subnet_address_prefixes"></a> [subnet\_address\_prefixes](#input\_subnet\_address\_prefixes)
 

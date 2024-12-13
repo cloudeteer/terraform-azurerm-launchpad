@@ -27,7 +27,7 @@ locals {
 }
 
 resource "azurerm_management_lock" "key_vault_lock" {
-  count = var.init || !var.key_vault_deletion_lock || !var.create_key_vault ? 0 : 1
+  count = !var.key_vault_deletion_lock || !var.create_key_vault ? 0 : 1
 
   name       = "key_vault_lock"
   scope      = azurerm_key_vault.this[0].id
@@ -35,6 +35,7 @@ resource "azurerm_management_lock" "key_vault_lock" {
   notes      = "This lock prevents the deletion of the Key Vault, which contains critical infrastructure information."
 }
 
+#trivy:ignore:avd-azu-0013
 resource "azurerm_key_vault" "this" {
   count = var.create_key_vault ? 1 : 0
 
@@ -46,16 +47,19 @@ resource "azurerm_key_vault" "this" {
   tenant_id = data.azurerm_client_config.current.tenant_id
 
   enable_rbac_authorization     = true
-  public_network_access_enabled = var.init ? true : false
+  public_network_access_enabled = var.key_vault_public_network_access_enabled
   purge_protection_enabled      = true
   sku_name                      = "standard"
   soft_delete_retention_days    = 30
 
-  network_acls {
-    bypass                     = local.key_vault_private_link_enabled ? "AzureServices" : "None"
-    default_action             = "Deny"
-    ip_rules                   = var.init ? [var.init_access_ip_address] : []
-    virtual_network_subnet_ids = local.key_vault_private_link_enabled ? var.key_vault_virtual_network_subnet_ids : null
+  dynamic "network_acls" {
+    for_each = var.key_vault_public_network_access_enabled && length(var.key_vault_public_network_access_ip_rules) > 0 ? [true] : []
+    content {
+      bypass                     = local.key_vault_private_link_enabled ? "AzureServices" : "None"
+      default_action             = "Deny"
+      ip_rules                   = var.key_vault_public_network_access_ip_rules
+      virtual_network_subnet_ids = local.key_vault_private_link_enabled ? var.key_vault_virtual_network_subnet_ids : null
+    }
   }
 }
 
@@ -86,10 +90,10 @@ resource "azurerm_private_endpoint" "key_vault" {
 }
 
 resource "azurerm_role_assignment" "key_vault_admin_current_user" {
-  count = var.create_key_vault && var.init ? 1 : 0
+  count = var.create_key_vault && var.grant_access_to_key_vault ? 1 : 0
 
   description          = "Temporary role assignment. Delete this assignment if unsure why it is still existing."
-  principal_id         = local.init_access_azure_principal_id
+  principal_id         = local.grant_access_to_azure_principal_id
   role_definition_name = "Key Vault Administrator"
   scope                = azurerm_key_vault.this[0].id
 }

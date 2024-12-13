@@ -1,8 +1,8 @@
 locals {
-  init_access_azure_principal_id = (
-    var.init_access_azure_principal_id == null ?
+  grant_access_to_azure_principal_id = (
+    var.grant_access_to_azure_principal_id == null ?
     data.azurerm_client_config.current.object_id :
-    var.init_access_azure_principal_id
+    var.grant_access_to_azure_principal_id
   )
   default_location_short = {
     asia               = "asia"
