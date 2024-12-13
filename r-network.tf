@@ -4,7 +4,7 @@ locals {
     join("-", compact(["nsg", var.name, "prd", local.location_short[var.location], var.name_suffix]))
   )
 
-  subnet_id = coalesce(var.subnet_id, one(azurerm_subnet.this[*].id))
+  subnet_id = var.create_private_runner ? coalesce(var.subnet_id, one(azurerm_subnet.this[*].id)) : null
 
   subnet_name = coalesce(
     var.name_overrides.subnet,
@@ -18,7 +18,7 @@ locals {
 }
 
 resource "azurerm_virtual_network" "this" {
-  count               = var.create_subnet ? 1 : 0
+  count               = var.create_private_runner && var.create_subnet ? 1 : 0
   name                = local.virtual_network_name
   resource_group_name = var.resource_group_name
   location            = var.location
@@ -28,7 +28,7 @@ resource "azurerm_virtual_network" "this" {
 }
 
 resource "azurerm_subnet" "this" {
-  count                = var.create_subnet ? 1 : 0
+  count                = var.create_private_runner && var.create_subnet ? 1 : 0
   name                 = local.subnet_name
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.this[0].name
@@ -37,7 +37,7 @@ resource "azurerm_subnet" "this" {
 }
 
 resource "azurerm_network_security_group" "this" {
-  count               = var.create_subnet ? 1 : 0
+  count               = var.create_private_runner && var.create_subnet ? 1 : 0
   name                = local.network_security_group_name
   location            = var.location
   resource_group_name = var.resource_group_name
@@ -45,7 +45,7 @@ resource "azurerm_network_security_group" "this" {
 }
 
 resource "azurerm_subnet_network_security_group_association" "this" {
-  count                     = var.create_subnet ? 1 : 0
+  count                     = var.create_private_runner && var.create_subnet ? 1 : 0
   subnet_id                 = local.subnet_id
   network_security_group_id = azurerm_network_security_group.this[0].id
 }

@@ -60,7 +60,7 @@ resource "azurerm_key_vault" "this" {
 }
 
 resource "azurerm_private_endpoint" "key_vault" {
-  count = var.create_key_vault ? 1 : 0
+  count = var.create_key_vault && var.create_private_runner ? 1 : 0
 
   name                = local.key_vault_private_endpoint_name
   location            = var.location

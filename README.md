@@ -25,10 +25,19 @@ The two variables, `runner_github_pat` and `runner_github_repo`, should be set a
 
 ```hcl
 variable "my_runner_github_pat" {
-  type = string
+  type        = string
+  description = <<-DESCRIPTION
+    GitHub Personal Access Token (PAT) used for authentication.
+    This variable should be set during runtime using the environment variable `TF_VAR_my_runner_github_pat`.
+  DESCRIPTION
 }
+
 variable "my_runner_github_repo" {
-  type = string
+  type        = string
+  description = <<-DESCRIPTION
+    The GitHub repository where the runner will be registered.
+    This variable should be set during runtime using the environment variable `TF_VAR_my_runner_github_repo`.
+  DESCRIPTION
 }
 
 resource "azurerm_resource_group" "example" {
@@ -108,12 +117,6 @@ Description: The name of the resource group in which the virtual machine should 
 
 Type: `string`
 
-### <a name="input_runner_github_pat"></a> [runner\_github\_pat](#input\_runner\_github\_pat)
-
-Description: GitHub PAT that will be used to register GitHub Action Runner tokens
-
-Type: `string`
-
 ### <a name="input_runner_github_repo"></a> [runner\_github\_repo](#input\_runner\_github\_repo)
 
 Description: Specify the GitHub repository owner and name seperated by `/` to register the action runner. e.g. `cloudeteer/squad-customer`
@@ -127,6 +130,14 @@ The following input variables are optional (have default values):
 ### <a name="input_create_key_vault"></a> [create\_key\_vault](#input\_create\_key\_vault)
 
 Description: Create a central Key Vault which can be used to store secrets and keys securely during workload deployments.
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_create_private_runner"></a> [create\_private\_runner](#input\_create\_private\_runner)
+
+Description: Specifies whether to create an Azure Virtual Machine Scale Set to provision virtual machines that register as GitHub private runners for the `runner_github_repo` repository.
 
 Type: `bool`
 
@@ -290,6 +301,14 @@ Default:
   "prod-azure-plan": "prod-azure (plan)"
 }
 ```
+
+### <a name="input_runner_github_pat"></a> [runner\_github\_pat](#input\_runner\_github\_pat)
+
+Description: GitHub PAT that will be used to register GitHub Action Runner tokens
+
+Type: `string`
+
+Default: `null`
 
 ### <a name="input_runner_public_ip_address"></a> [runner\_public\_ip\_address](#input\_runner\_public\_ip\_address)
 

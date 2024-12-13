@@ -4,6 +4,12 @@ variable "create_key_vault" {
   description = "Create a central Key Vault which can be used to store secrets and keys securely during workload deployments."
 }
 
+variable "create_private_runner" {
+  type        = bool
+  description = "Specifies whether to create an Azure Virtual Machine Scale Set to provision virtual machines that register as GitHub private runners for the `runner_github_repo` repository."
+  default     = true
+}
+
 variable "create_role_assignments" {
   type        = bool
   default     = true
@@ -29,7 +35,7 @@ variable "create_subnet" {
   EOT
 
   validation {
-    condition = var.create_subnet ? (
+    condition = !var.create_private_runner ? true : var.create_subnet ? (
       # create_subnet = true
       length(var.subnet_address_prefixes) > 0 &&
       length(var.virtual_network_address_space) > 0 &&
@@ -40,6 +46,7 @@ variable "create_subnet" {
       length(var.virtual_network_address_space) == 0 &&
       var.subnet_id != null
     )
+
     error_message = <<-EOT
       Invalid configuration for 'create_subnet':
 
@@ -185,6 +192,12 @@ variable "runner_github_pat" {
   type        = string
   sensitive   = true
   description = "GitHub PAT that will be used to register GitHub Action Runner tokens"
+  default     = null
+
+  validation {
+    condition     = var.create_private_runner ? var.runner_github_pat != null : true
+    error_message = "A GitHub PAT is required when a GitHub private runner is created."
+  }
 }
 
 variable "runner_github_repo" {
@@ -242,6 +255,11 @@ variable "subnet_address_prefixes" {
   type        = list(string)
   description = "A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network."
   default     = []
+
+  validation {
+    condition     = var.create_private_runner ? var.subnet_address_prefixes != null : true
+    error_message = "Subnet address prefixes are required when a GitHub private runner is created."
+  }
 }
 
 variable "subnet_id" {
@@ -272,4 +290,9 @@ variable "virtual_network_address_space" {
   type        = list(string)
   description = "A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet."
   default     = []
+
+  validation {
+    condition     = var.create_private_runner ? var.virtual_network_address_space != null : true
+    error_message = "A virtual network address space is required when a GitHub private runner is created."
+  }
 }

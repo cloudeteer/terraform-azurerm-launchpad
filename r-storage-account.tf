@@ -78,6 +78,8 @@ resource "azurerm_storage_container" "this" {
 }
 
 resource "azurerm_private_endpoint" "storage_account" {
+  count = var.create_private_runner ? 1 : 0
+
   name                = local.storage_private_endpoint_name
   location            = var.location
   resource_group_name = var.resource_group_name

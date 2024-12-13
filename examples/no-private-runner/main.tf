@@ -28,7 +28,12 @@ module "example" {
   runner_github_pat  = var.my_runner_github_pat
   runner_github_repo = var.my_runner_github_repo
 
-  virtual_network_address_space = ["10.0.0.0/16"]
-  subnet_address_prefixes       = ["10.0.2.0/24"]
-  management_group_names        = ["mg-example"]
+  #
+  # Do not deploy a private runner virtual machine. Instead, use the GitHub-hosted runner.
+  # For public runner the Key Vault and Storage Account should be public.
+  #
+  create_private_runner                         = false
+  create_subnet                                 = false
+  storage_account_public_network_access_enabled = true
+  key_vault_public_network_access_enabled       = true
 }
