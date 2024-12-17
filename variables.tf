@@ -37,6 +37,12 @@ variable "location" {
   description = "The geographic location where the resources will be deployed. This is must be a region name supported by Azure."
 }
 
+variable "location_short" {
+  description = "Map of location short codes to merge with the existing defaults"
+  type        = map(string)
+  default     = {}
+}
+
 variable "management_group_names" {
   type        = list(string)
   description = "A list of management group in order the Launchpad gets Owner-permission in these management-groups."
