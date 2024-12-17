@@ -4,7 +4,7 @@ locals {
     data.azurerm_client_config.current.object_id :
     var.init_access_azure_principal_id
   )
-  location_short = {
+  default_location_short = {
     asia               = "asia"
     asiapacific        = "apac"
     australia          = "aus"
@@ -77,4 +77,5 @@ locals {
     westus2            = "usw2"
     westus3            = "usw3"
   }
+  location_short = merge(local.default_location_short, var.location_short)
 }
