@@ -5,8 +5,12 @@ variable "init" {
 }
 
 variable "init_access_azure_principal_id" {
-  type    = string
-  default = null
+  description = <<-EOD
+    Set the Azure Principal ID which will be given access to the storage account and key vault.
+    **NOTE**: This is only required when `init` is set to `true`.
+  EOD
+  type        = string
+  default     = null
 }
 
 variable "init_access_ip_address" {
