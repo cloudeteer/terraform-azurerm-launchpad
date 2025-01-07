@@ -145,7 +145,8 @@ Default: `false`
 
 ### <a name="input_init_access_azure_principal_id"></a> [init\_access\_azure\_principal\_id](#input\_init\_access\_azure\_principal\_id)
 
-Description: n/a
+Description: Set the Azure Principal ID which will be given access to the storage account and key vault.
+**NOTE**: This is only required when `init` is set to `true`.
 
 Type: `string`
 
