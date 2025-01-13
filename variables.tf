@@ -146,6 +146,12 @@ variable "subnet_address_prefixes" {
   description = "A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network."
 }
 
+variable "subnet_id" {
+  type        = string
+  description = "One existing subnet ID."
+  default     = ""
+}
+
 variable "subscription_ids" {
   type        = list(string)
   description = "A list of subscription IDs, which the Launchpad will manage.Each must be exactly 36 characters long."
