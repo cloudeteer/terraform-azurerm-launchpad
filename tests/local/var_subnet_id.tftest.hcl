@@ -15,9 +15,9 @@ mock_provider "azurerm" {
 
 run "should_success_on_subnet_id" {
   variables {
-    subnet_address_prefixes = []
+    subnet_address_prefixes       = []
     virtual_network_address_space = []
-    subnet_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysubnet1"
+    subnet_id                     = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysubnet1"
   }
   command = plan
 }
@@ -25,18 +25,18 @@ run "should_success_on_subnet_id" {
 run "should_fail_on_subnet_id_1" {
   variables {
     virtual_network_address_space = []
-    subnet_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysubnet1"
+    subnet_id                     = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysubnet1"
   }
-  command = plan
+  command         = plan
   expect_failures = [var.subnet_id]
 }
 
 run "should_fail_on_subnet_id_2" {
   variables {
     subnet_address_prefixes = []
-    subnet_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysubnet1"
+    subnet_id               = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysubnet1"
   }
-  command = plan
+  command         = plan
   expect_failures = [var.subnet_id]
 }
 
@@ -44,6 +44,6 @@ run "should_fail_on_subnet_id_3" {
   variables {
     subnet_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysubnet1"
   }
-  command = plan
+  command         = plan
   expect_failures = [var.subnet_id]
 }
