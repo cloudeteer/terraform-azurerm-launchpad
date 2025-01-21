@@ -119,12 +119,6 @@ Description: Specify the GitHub repository owner and name seperated by `/` to re
 
 Type: `string`
 
-### <a name="input_virtual_network_address_space"></a> [virtual\_network\_address\_space](#input\_virtual\_network\_address\_space)
-
-Description: A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet.
-
-Type: `list(string)`
-
 ## Optional Inputs
 
 The following input variables are optional (have default values):
@@ -139,7 +133,8 @@ Default: `false`
 
 ### <a name="input_init_access_azure_principal_id"></a> [init\_access\_azure\_principal\_id](#input\_init\_access\_azure\_principal\_id)
 
-Description: n/a
+Description: Set the Azure Principal ID which will be given access to the storage account and key vault.
+**NOTE**: This is only required when `init` is set to `true`.
 
 Type: `string`
 
@@ -306,6 +301,14 @@ Description: A mapping of tags which should be assigned to all resources in this
 Type: `map(string)`
 
 Default: `{}`
+
+### <a name="input_virtual_network_address_space"></a> [virtual\_network\_address\_space](#input\_virtual\_network\_address\_space)
+
+Description: A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet.
+
+Type: `list(string)`
+
+Default: `[]`
 
 ## Outputs
 

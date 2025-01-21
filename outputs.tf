@@ -1,13 +1,16 @@
+# tflint-ignore: terraform_naming_convention
 output "LAUNCHPAD_AZURE_CLIENT_ID" {
   value       = azurerm_user_assigned_identity.this.client_id
   description = "The client ID of the Azure user identity assigned to the Launchpad."
 }
 
+# tflint-ignore: terraform_naming_convention
 output "LAUNCHPAD_AZURE_STORAGE_ACCOUNT_NAME" {
   value       = azurerm_storage_account.this.name
   description = "The storage account name used by the Launchpad for the Terraform state backend."
 }
 
+# tflint-ignore: terraform_naming_convention
 output "LAUNCHPAD_AZURE_TENANT_ID" {
   value       = azurerm_user_assigned_identity.this.tenant_id
   description = "The tenant ID of the Azure user identity assigned to the Launchpad"

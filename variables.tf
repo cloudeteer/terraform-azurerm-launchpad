@@ -5,8 +5,12 @@ variable "init" {
 }
 
 variable "init_access_azure_principal_id" {
-  type    = string
-  default = null
+  description = <<-EOD
+    Set the Azure Principal ID which will be given access to the storage account and key vault.
+    **NOTE**: This is only required when `init` is set to `true`.
+  EOD
+  type        = string
+  default     = null
 }
 
 variable "init_access_ip_address" {
@@ -179,4 +183,5 @@ variable "tags" {
 variable "virtual_network_address_space" {
   type        = list(string)
   description = "A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet."
+  default     = []
 }
