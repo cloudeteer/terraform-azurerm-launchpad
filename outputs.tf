@@ -29,21 +29,22 @@ output "network_security_group_name" {
 }
 
 output "subnet_id" {
-  value       = azurerm_subnet.this.id
+  value       = local.subnet_id
   description = "The ID of the subnet within the Virtual Network, associated with the Launchpad production environment."
 }
 
 output "subnet_name" {
-  value       = azurerm_subnet.this.name
-  description = "The name of the subnet within the Virtual Network, associated with the Launchpad production environment."
+  value       = var.subnet_id == null ? azurerm_subnet.this[0].name : split("/", var.subnet_id)[10]
+  description = "The name of the subnet within the Virtual Network, associated with the Launchpad production environment in case."
 }
 
 output "virtual_network_id" {
-  value       = azurerm_virtual_network.this.id
+  value = (var.subnet_id == null ? azurerm_virtual_network.this[0].id :
+  join("/", slice(split("/", var.subnet_id), 0, 9)))
   description = "The ID of the Azure Virtual Network (VNet) associated with the Launchpad."
 }
 
 output "virtual_network_name" {
-  value       = azurerm_virtual_network.this.name
+  value       = var.subnet_id == null ? azurerm_virtual_network.this[0].name : split("/", var.subnet_id)[8]
   description = "The name of the Azure Virtual Network (VNet) associated with the Launchpad."
 }

@@ -144,12 +144,18 @@ variable "service_endpoints" {
 variable "subnet_address_prefixes" {
   type        = list(string)
   description = "A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network."
+  default     = []
 }
 
 variable "subnet_id" {
   type        = string
-  description = "One existing subnet ID."
-  default     = ""
+  description = "One existing subnet ID in which the Launchpad will be deployed."
+  default     = null
+
+  validation {
+    condition     = (length(var.subnet_address_prefixes) > 0 && length(var.virtual_network_address_space) > 0 && var.subnet_id == null) || (length(var.subnet_address_prefixes) == 0 && length(var.virtual_network_address_space) == 0 && var.subnet_id != null)
+    error_message = "You need to use the 'subnet_id' or ('subnet_address_prefixes' AND 'virtual_network_address_space')."
+  }
 }
 
 variable "subscription_ids" {

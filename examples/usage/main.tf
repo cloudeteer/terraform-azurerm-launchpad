@@ -10,12 +10,7 @@ resource "azurerm_resource_group" "example" {
   name     = "rg-example-dev-gwc-01"
 }
 
-##################
-### First Case ###
-##################
-# A new VNET will be created (default)
-
-module "first-example" {
+module "default-example" {
   source = "cloudeteer/launchpad/azurerm"
 
   resource_group_name = azurerm_resource_group.example.name
@@ -27,40 +22,4 @@ module "first-example" {
   virtual_network_address_space = ["10.0.0.0/16"]
   subnet_address_prefixes       = ["10.0.2.0/24"]
   management_group_names        = ["mg-example"]
-}
-
-
-###################
-### Second Case ###
-###################
-# One or more VNETs will be passed
-resource "azurerm_virtual_network" "example" {
-  address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.example.location
-  name                = "vnet-example-dev-gwc-01"
-  resource_group_name = azurerm_resource_group.example.name
-}
-
-resource "azurerm_subnet" "example" {
-  address_prefixes     = ["10.0.2.0/24"]
-  name                 = "subnet-example-dev-gwc-01"
-  resource_group_name  = azurerm_resource_group.example.name
-  virtual_network_name = azurerm_virtual_network.example.name
-}
-
-module "second-example" {
-  source = "cloudeteer/launchpad/azurerm"
-
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-
-  runner_github_pat  = var.my_runner_github_pat
-  runner_github_repo = var.my_runner_github_repo
-
-  subnet_id = azurerm_subnet.example.id
-
-  virtual_network_address_space = ["10.0.0.0/16"] # virtual_network will be created
-  subnet_address_prefixes       = ["10.0.2.0/24"] # subnet will be created
-
-  management_group_names = ["mg-example"]
 }

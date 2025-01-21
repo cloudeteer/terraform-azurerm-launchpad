@@ -40,7 +40,7 @@ resource "azurerm_private_endpoint" "key_vault" {
   resource_group_name = var.resource_group_name
   tags                = var.tags
 
-  subnet_id = local.current_subnet_id
+  subnet_id = local.subnet_id
 
   private_service_connection {
     name                           = "vault"

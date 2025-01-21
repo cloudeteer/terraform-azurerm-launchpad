@@ -86,7 +86,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     ip_configuration {
       name      = "internal"
       primary   = true
-      subnet_id = local.current_subnet_id
+      subnet_id = local.subnet_id
 
       dynamic "public_ip_address" {
         for_each = var.runner_public_ip_address ? [true] : []

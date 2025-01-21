@@ -36,12 +36,7 @@ resource "azurerm_resource_group" "example" {
   name     = "rg-example-dev-gwc-01"
 }
 
-##################
-### First Case ###
-##################
-# A new VNET will be created (default)
-
-module "first-example" {
+module "default-example" {
   source = "cloudeteer/launchpad/azurerm"
 
   resource_group_name = azurerm_resource_group.example.name
@@ -53,42 +48,6 @@ module "first-example" {
   virtual_network_address_space = ["10.0.0.0/16"]
   subnet_address_prefixes       = ["10.0.2.0/24"]
   management_group_names        = ["mg-example"]
-}
-
-
-###################
-### Second Case ###
-###################
-# One or more VNETs will be passed
-resource "azurerm_virtual_network" "example" {
-  address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.example.location
-  name                = "vnet-example-dev-gwc-01"
-  resource_group_name = azurerm_resource_group.example.name
-}
-
-resource "azurerm_subnet" "example" {
-  address_prefixes     = ["10.0.2.0/24"]
-  name                 = "subnet-example-dev-gwc-01"
-  resource_group_name  = azurerm_resource_group.example.name
-  virtual_network_name = azurerm_virtual_network.example.name
-}
-
-module "second-example" {
-  source = "cloudeteer/launchpad/azurerm"
-
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-
-  runner_github_pat  = var.my_runner_github_pat
-  runner_github_repo = var.my_runner_github_repo
-
-  subnet_id = azurerm_subnet.example.id
-
-  virtual_network_address_space = ["10.0.0.0/16"] # virtual_network will be created
-  subnet_address_prefixes       = ["10.0.2.0/24"] # subnet will be created
-
-  management_group_names = ["mg-example"]
 }
 ```
 
@@ -159,12 +118,6 @@ Type: `string`
 Description: Specify the GitHub repository owner and name seperated by `/` to register the action runner. e.g. `cloudeteer/squad-customer`
 
 Type: `string`
-
-### <a name="input_subnet_address_prefixes"></a> [subnet\_address\_prefixes](#input\_subnet\_address\_prefixes)
-
-Description: A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network.
-
-Type: `list(string)`
 
 ### <a name="input_virtual_network_address_space"></a> [virtual\_network\_address\_space](#input\_virtual\_network\_address\_space)
 
@@ -322,13 +275,21 @@ Default:
 ]
 ```
 
+### <a name="input_subnet_address_prefixes"></a> [subnet\_address\_prefixes](#input\_subnet\_address\_prefixes)
+
+Description: A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network.
+
+Type: `list(string)`
+
+Default: `[]`
+
 ### <a name="input_subnet_id"></a> [subnet\_id](#input\_subnet\_id)
 
-Description: One existing subnet ID.
+Description: One existing subnet ID in which the Launchpad will be deployed.
 
 Type: `string`
 
-Default: `""`
+Default: `null`
 
 ### <a name="input_subscription_ids"></a> [subscription\_ids](#input\_subscription\_ids)
 
@@ -380,7 +341,7 @@ Description: The ID of the subnet within the Virtual Network, associated with th
 
 ### <a name="output_subnet_name"></a> [subnet\_name](#output\_subnet\_name)
 
-Description: The name of the subnet within the Virtual Network, associated with the Launchpad production environment.
+Description: The name of the subnet within the Virtual Network, associated with the Launchpad production environment in case.
 
 ### <a name="output_virtual_network_id"></a> [virtual\_network\_id](#output\_virtual\_network\_id)
 
