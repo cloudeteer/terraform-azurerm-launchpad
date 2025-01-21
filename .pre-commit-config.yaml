@@ -6,16 +6,24 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
   - repo: https://github.com/terraform-docs/terraform-docs
-    rev: v0.18.0
+    rev: v0.19.0
     hooks:
       - id: terraform-docs-system
         args: ["."]
+  - repo: local
+    hooks:
+      - id: tfsort
+        name: Sort Terraform variables
+        language: system
+        types: [terraform]
+        entry: bash -c 'for f in $@; do tfsort "$f"; done' --
+        files: ^variables|outputs\.tf$
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: "v1.92.0"
+    rev: "v1.96.1"
     hooks:
       - id: terraform_fmt
       - id: terraform_tflint
-        exclude: ^examples/
+        exclude: ^(examples|tests)/
         args:
           - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
           - --hook-config=--delegate-chdir
@@ -26,6 +34,15 @@ repos:
         args:
           - --args=--config=__GIT_WORKING_DIR__/.tflint.examples.hcl
           - --hook-config=--delegate-chdir
+
+      - id: terraform_tflint
+        alias: terraform_tflint_tests
+        name: Terraform validate tests with tflint
+        files: ^tests/
+        args:
+          - --args=--config=__GIT_WORKING_DIR__/.tflint.tests.hcl
+          - --hook-config=--delegate-chdir
+
       - id: terraform_trivy
         exclude: ^(examples|tests)/
         args:
