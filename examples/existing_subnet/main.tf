@@ -24,7 +24,7 @@ resource "azurerm_subnet" "example" {
   virtual_network_name = azurerm_virtual_network.example.name
 }
 
-module "existing-subnet-example" {
+module "example" {
   source = "cloudeteer/launchpad/azurerm"
 
   resource_group_name = azurerm_resource_group.example.name

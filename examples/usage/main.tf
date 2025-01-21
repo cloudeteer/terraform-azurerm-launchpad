@@ -10,7 +10,7 @@ resource "azurerm_resource_group" "example" {
   name     = "rg-example-dev-gwc-01"
 }
 
-module "default-example" {
+module "example" {
   source = "cloudeteer/launchpad/azurerm"
 
   resource_group_name = azurerm_resource_group.example.name
