@@ -123,6 +123,14 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
+### <a name="input_create_subnet"></a> [create\_subnet](#input\_create\_subnet)
+
+Description: Is used to create a new VNET and Subnet.
+
+Type: `bool`
+
+Default: `true`
+
 ### <a name="input_init"></a> [init](#input\_init)
 
 Description: Is used for initiating the module itself for the first time. For more information please go here https://github.com/cloudeteer/terraform-azurerm-launchpad/blob/main/INSTALL.md

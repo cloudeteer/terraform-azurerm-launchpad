@@ -1,3 +1,14 @@
+variable "create_subnet" {
+  type        = bool
+  default     = true
+  description = "Is used to create a new VNET and Subnet."
+
+  validation {
+    condition     = (var.subnet_id == null && var.create_subnet) || (var.subnet_id != null && !var.create_subnet)
+    error_message = "If 'subnet_id' is given, you need to set 'create_subnet' to 'false'."
+  }
+}
+
 variable "init" {
   type        = bool
   default     = false

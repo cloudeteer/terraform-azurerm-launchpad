@@ -3,7 +3,7 @@ locals {
 }
 
 resource "azurerm_virtual_network" "this" {
-  count               = var.subnet_id == null ? 1 : 0
+  count               = var.create_subnet ? 1 : 0
   name                = join("-", compact(["vnet", var.name, "prd", local.location_short[var.location], var.name_suffix]))
   resource_group_name = var.resource_group_name
   location            = var.location
@@ -13,7 +13,7 @@ resource "azurerm_virtual_network" "this" {
 }
 
 resource "azurerm_subnet" "this" {
-  count                = var.subnet_id == null ? 1 : 0
+  count                = var.create_subnet ? 1 : 0
   name                 = join("-", compact(["snet", var.name, "prd", local.location_short[var.location], var.name_suffix]))
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.this[0].name
