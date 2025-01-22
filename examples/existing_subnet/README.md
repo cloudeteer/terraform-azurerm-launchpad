@@ -1,6 +1,6 @@
 # Example: Usage
 
-This primary usage example is also included in the [README.md](../../README.md) of this module. It demonstrates the launchpad module using as many default values as possible.
+This secondary usage example demonstrates the launchpad module using an existing Azure Subnet.
 
 ## Prerequisites
 

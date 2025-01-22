@@ -33,21 +33,21 @@ output "network_security_group_name" {
 
 output "subnet_id" {
   value       = local.subnet_id
-  description = "The ID of the subnet within the Virtual Network, associated with the Launchpad production environment."
+  description = "The ID of the subnet within the Virtual Network associated with the Launchpad. If `var.subnet_id` is specified, its value is used for this output. Otherwise, the ID of the subnet created by this module is returned."
 }
 
 output "subnet_name" {
   value       = var.subnet_id == null ? azurerm_subnet.this[0].name : split("/", var.subnet_id)[10]
-  description = "The name of the subnet within the Virtual Network, associated with the Launchpad production environment in case."
+  description = "The name of the subnet within the Virtual Network associated with the Launchpad. If `var.subnet_id` is not specified, the name of the subnet created by this module is returned. Otherwise, the name is extracted from the specified `var.subnet_id`."
 }
 
 output "virtual_network_id" {
   value = (var.subnet_id == null ? azurerm_virtual_network.this[0].id :
   join("/", slice(split("/", var.subnet_id), 0, 9)))
-  description = "The ID of the Azure Virtual Network (VNet) associated with the Launchpad."
+  description = "The ID of the Azure Virtual Network (VNet) associated with the Launchpad. If `var.subnet_id` is not specified, the ID of the Virtual Network created by this module is returned. Otherwise, the Virtual Network ID is derived from the specified `var.subnet_id`."
 }
 
 output "virtual_network_name" {
   value       = var.subnet_id == null ? azurerm_virtual_network.this[0].name : split("/", var.subnet_id)[8]
-  description = "The name of the Azure Virtual Network (VNet) associated with the Launchpad."
+  description = "The name of the Azure Virtual Network (VNet) associated with the Launchpad. If `var.subnet_id` is not specified, the name of the Virtual Network created by this module is returned. Otherwise, the name is extracted from the specified `var.subnet_id`."
 }

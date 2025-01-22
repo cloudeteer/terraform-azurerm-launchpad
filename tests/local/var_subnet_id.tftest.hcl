@@ -1,12 +1,3 @@
-variables {
-  location               = "germanywestcentral"
-  management_group_names = ["mg-test-1", "mg-test-2"]
-  resource_group_name    = "rg-test-1"
-  runner_github_pat      = "github_pat_0000000000000000000000_00000000000000000000000000000000000000000000000000000000000"
-  runner_github_repo     = "owner/repo"
-  subscription_ids       = ["00000000-0000-0000-0000-000000000000"]
-}
-
 mock_provider "azurerm" {
   source = "./tests/local/mocks"
 }
@@ -28,7 +19,7 @@ run "should_success_on_subnet_id_2" {
   command = plan
 }
 
-run "should_fail_on_subnet_id_1" {
+run "should_fail_on_given_subnet_adress_and_subnet_id" {
   variables {
     subnet_address_prefixes = ["192.168.0.0/24"]
     subnet_id               = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysubnet1"
@@ -37,7 +28,7 @@ run "should_fail_on_subnet_id_1" {
   expect_failures = [var.subnet_id]
 }
 
-run "should_fail_on_subnet_id_2" {
+run "should_fail_on_given_vnet_address_and_subnet_id" {
   variables {
     virtual_network_address_space = ["192.168.0.0/24"]
     subnet_id                     = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysubnet1"
@@ -46,7 +37,7 @@ run "should_fail_on_subnet_id_2" {
   expect_failures = [var.subnet_id]
 }
 
-run "should_fail_on_subnet_id_3" {
+run "should_fail_on_given_subnet_and_vnet_and_subnet_id" {
   variables {
     subnet_address_prefixes       = ["192.168.0.0/24"]
     virtual_network_address_space = ["192.168.0.0/24"]
@@ -56,7 +47,7 @@ run "should_fail_on_subnet_id_3" {
   expect_failures = [var.subnet_id]
 }
 
-run "should_fail_on_subnet_id_4" {
+run "should_fail_with_no_given_subnet_id_or_creation" {
   variables {
     create_subnet = false
   }
@@ -64,7 +55,7 @@ run "should_fail_on_subnet_id_4" {
   expect_failures = [var.subnet_id]
 }
 
-run "should_fail_on_create_subnet_1" {
+run "should_fail_with_given_subnet_id_and_create_subnet" {
   variables {
     create_subnet = true
     subnet_id     = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysubnet1"

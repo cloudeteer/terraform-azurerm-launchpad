@@ -1,11 +1,11 @@
 variable "create_subnet" {
   type        = bool
   default     = true
-  description = "Is used to create a new VNET and Subnet."
+  description = "Determines whether to create a new Virtual Network and Subnet. If `var.subnet_id` is specified, `create_subnet` must be set to `false`. Otherwise, if `var.subnet_id` is not specified, `create_subnet` should be set to `true`."
 
   validation {
     condition     = (var.subnet_id == null && var.create_subnet) || (var.subnet_id != null && !var.create_subnet)
-    error_message = "If 'subnet_id' is given, you need to set 'create_subnet' to 'false'."
+    error_message = "If 'subnet_id' is specified, 'create_subnet' must be set to 'false'."
   }
 }
 
@@ -164,12 +164,12 @@ variable "subnet_address_prefixes" {
 
 variable "subnet_id" {
   type        = string
-  description = "One existing subnet ID in which the Launchpad will be deployed."
+  description = "The ID of an existing subnet where the Launchpad will be deployed. If `subnet_id` is specified, both `subnet_address_prefixes` and `virtual_network_address_space` must be not set. Conversely, if `subnet_id` is not specified, both `subnet_address_prefixes` and `virtual_network_address_space` must be provided."
   default     = null
 
   validation {
     condition     = (length(var.subnet_address_prefixes) > 0 && length(var.virtual_network_address_space) > 0 && var.subnet_id == null) || (length(var.subnet_address_prefixes) == 0 && length(var.virtual_network_address_space) == 0 && var.subnet_id != null)
-    error_message = "You need to use the 'subnet_id' or ('subnet_address_prefixes' AND 'virtual_network_address_space')."
+    error_message = "You must provide either 'subnet_id' or both 'subnet_address_prefixes' and 'virtual_network_address_space'."
   }
 }
 

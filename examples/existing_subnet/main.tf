@@ -33,8 +33,9 @@ module "example" {
   runner_github_pat  = var.my_runner_github_pat
   runner_github_repo = var.my_runner_github_repo
 
+  management_group_names = ["mg-example"]
+
+  # Do not create a subnet, instead bring your own.
   create_subnet = false
   subnet_id     = azurerm_subnet.example.id
-
-  management_group_names = ["mg-example"]
 }

@@ -125,7 +125,7 @@ The following input variables are optional (have default values):
 
 ### <a name="input_create_subnet"></a> [create\_subnet](#input\_create\_subnet)
 
-Description: Is used to create a new VNET and Subnet.
+Description: Determines whether to create a new Virtual Network and Subnet. If `var.subnet_id` is specified, `create_subnet` must be set to `false`. Otherwise, if `var.subnet_id` is not specified, `create_subnet` should be set to `true`.
 
 Type: `bool`
 
@@ -288,7 +288,7 @@ Default: `[]`
 
 ### <a name="input_subnet_id"></a> [subnet\_id](#input\_subnet\_id)
 
-Description: One existing subnet ID in which the Launchpad will be deployed.
+Description: The ID of an existing subnet where the Launchpad will be deployed. If `subnet_id` is specified, both `subnet_address_prefixes` and `virtual_network_address_space` must be not set. Conversely, if `subnet_id` is not specified, both `subnet_address_prefixes` and `virtual_network_address_space` must be provided.
 
 Type: `string`
 
@@ -348,17 +348,17 @@ Description: The name of the Azure Network Security Group (NSG) associated with 
 
 ### <a name="output_subnet_id"></a> [subnet\_id](#output\_subnet\_id)
 
-Description: The ID of the subnet within the Virtual Network, associated with the Launchpad production environment.
+Description: The ID of the subnet within the Virtual Network associated with the Launchpad. If `var.subnet_id` is specified, its value is used for this output. Otherwise, the ID of the subnet created by this module is returned.
 
 ### <a name="output_subnet_name"></a> [subnet\_name](#output\_subnet\_name)
 
-Description: The name of the subnet within the Virtual Network, associated with the Launchpad production environment in case.
+Description: The name of the subnet within the Virtual Network associated with the Launchpad. If `var.subnet_id` is not specified, the name of the subnet created by this module is returned. Otherwise, the name is extracted from the specified `var.subnet_id`.
 
 ### <a name="output_virtual_network_id"></a> [virtual\_network\_id](#output\_virtual\_network\_id)
 
-Description: The ID of the Azure Virtual Network (VNet) associated with the Launchpad.
+Description: The ID of the Azure Virtual Network (VNet) associated with the Launchpad. If `var.subnet_id` is not specified, the ID of the Virtual Network created by this module is returned. Otherwise, the Virtual Network ID is derived from the specified `var.subnet_id`.
 
 ### <a name="output_virtual_network_name"></a> [virtual\_network\_name](#output\_virtual\_network\_name)
 
-Description: The name of the Azure Virtual Network (VNet) associated with the Launchpad.
+Description: The name of the Azure Virtual Network (VNet) associated with the Launchpad. If `var.subnet_id` is not specified, the name of the Virtual Network created by this module is returned. Otherwise, the name is extracted from the specified `var.subnet_id`.
 <!-- END_TF_DOCS -->
