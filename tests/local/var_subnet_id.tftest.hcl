@@ -25,7 +25,7 @@ run "should_fail_on_given_subnet_adress_and_subnet_id" {
     subnet_id               = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysubnet1"
   }
   command         = plan
-  expect_failures = [var.subnet_id]
+  expect_failures = [var.create_subnet]
 }
 
 run "should_fail_on_given_vnet_address_and_subnet_id" {
@@ -34,7 +34,7 @@ run "should_fail_on_given_vnet_address_and_subnet_id" {
     subnet_id                     = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysubnet1"
   }
   command         = plan
-  expect_failures = [var.subnet_id]
+  expect_failures = [var.create_subnet]
 }
 
 run "should_fail_on_given_subnet_and_vnet_and_subnet_id" {
@@ -44,7 +44,7 @@ run "should_fail_on_given_subnet_and_vnet_and_subnet_id" {
     subnet_id                     = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysubnet1"
   }
   command         = plan
-  expect_failures = [var.subnet_id]
+  expect_failures = [var.create_subnet]
 }
 
 run "should_fail_with_no_given_subnet_id_or_creation" {
@@ -52,7 +52,7 @@ run "should_fail_with_no_given_subnet_id_or_creation" {
     create_subnet = false
   }
   command         = plan
-  expect_failures = [var.subnet_id]
+  expect_failures = [var.create_subnet]
 }
 
 run "should_fail_with_given_subnet_id_and_create_subnet" {

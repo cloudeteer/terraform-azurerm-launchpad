@@ -125,7 +125,13 @@ The following input variables are optional (have default values):
 
 ### <a name="input_create_subnet"></a> [create\_subnet](#input\_create\_subnet)
 
-Description: Determines whether to create a new Virtual Network and Subnet. If `var.subnet_id` is specified, `create_subnet` must be set to `false`. Otherwise, if `var.subnet_id` is not specified, `create_subnet` should be set to `true`.
+Description: Determines whether to create a new Virtual Network and Subnet.
+- Set to `true` to create a new Virtual Network and Subnet. In this case:
+  - `subnet_id` must not be specified.
+  - Both `subnet_address_prefixes` and `virtual_network_address_space` must be provided.
+- Set to `false` to use an existing Subnet. In this case:
+  - `subnet_id` must be specified.
+  - `subnet_address_prefixes` and `virtual_network_address_space` must not be provided.
 
 Type: `bool`
 

@@ -1,11 +1,39 @@
 variable "create_subnet" {
   type        = bool
   default     = true
-  description = "Determines whether to create a new Virtual Network and Subnet. If `var.subnet_id` is specified, `create_subnet` must be set to `false`. Otherwise, if `var.subnet_id` is not specified, `create_subnet` should be set to `true`."
+  description = <<-EOT
+    Determines whether to create a new Virtual Network and Subnet.
+    - Set to `true` to create a new Virtual Network and Subnet. In this case:
+      - `subnet_id` must not be specified.
+      - Both `subnet_address_prefixes` and `virtual_network_address_space` must be provided.
+    - Set to `false` to use an existing Subnet. In this case:
+      - `subnet_id` must be specified.
+      - `subnet_address_prefixes` and `virtual_network_address_space` must not be provided.
+  EOT
 
   validation {
-    condition     = (var.subnet_id == null && var.create_subnet) || (var.subnet_id != null && !var.create_subnet)
-    error_message = "If 'subnet_id' is specified, 'create_subnet' must be set to 'false'."
+    condition = var.create_subnet ? (
+      # create_subnet = true
+      length(var.subnet_address_prefixes) > 0 &&
+      length(var.virtual_network_address_space) > 0 &&
+      var.subnet_id == null
+      ) : (
+      # create_subnet = false
+      length(var.subnet_address_prefixes) == 0 &&
+      length(var.virtual_network_address_space) == 0 &&
+      var.subnet_id != null
+    )
+    error_message = <<-EOT
+      Invalid configuration for 'create_subnet':
+
+      - When 'create_subnet' is set to 'true':
+        - 'subnet_id' must not be specified.
+        - Both 'subnet_address_prefixes' and 'virtual_network_address_space' must be provided.
+
+      - When 'create_subnet' is set to 'false':
+        - 'subnet_id' must be specified.
+        - 'subnet_address_prefixes' and 'virtual_network_address_space' must not be provided.
+    EOT
   }
 }
 
@@ -166,11 +194,6 @@ variable "subnet_id" {
   type        = string
   description = "The ID of an existing subnet where the Launchpad will be deployed. If `subnet_id` is specified, both `subnet_address_prefixes` and `virtual_network_address_space` must be not set. Conversely, if `subnet_id` is not specified, both `subnet_address_prefixes` and `virtual_network_address_space` must be provided."
   default     = null
-
-  validation {
-    condition     = (length(var.subnet_address_prefixes) > 0 && length(var.virtual_network_address_space) > 0 && var.subnet_id == null) || (length(var.subnet_address_prefixes) == 0 && length(var.virtual_network_address_space) == 0 && var.subnet_id != null)
-    error_message = "You must provide either 'subnet_id' or both 'subnet_address_prefixes' and 'virtual_network_address_space'."
-  }
 }
 
 variable "subscription_ids" {
