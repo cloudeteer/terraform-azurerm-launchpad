@@ -1,4 +1,4 @@
-# Example: Usage
+# Example: existing_subnet
 
 This secondary usage example demonstrates the launchpad module using an existing Azure Subnet.
 
