@@ -1,6 +1,6 @@
 # Example: existing_subnet
 
-This secondary usage example demonstrates the launchpad module using an existing Azure Subnet.
+This example showcases the Launchpad module configured to utilize an existing Azure subnet.
 
 ## Prerequisites
 
