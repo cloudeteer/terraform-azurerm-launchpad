@@ -119,21 +119,23 @@ Description: Specify the GitHub repository owner and name seperated by `/` to re
 
 Type: `string`
 
-### <a name="input_subnet_address_prefixes"></a> [subnet\_address\_prefixes](#input\_subnet\_address\_prefixes)
-
-Description: A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network.
-
-Type: `list(string)`
-
-### <a name="input_virtual_network_address_space"></a> [virtual\_network\_address\_space](#input\_virtual\_network\_address\_space)
-
-Description: A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet.
-
-Type: `list(string)`
-
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### <a name="input_create_subnet"></a> [create\_subnet](#input\_create\_subnet)
+
+Description: Determines whether to create a new Virtual Network and Subnet.
+- Set to `true` to create a new Virtual Network and Subnet. In this case:
+  - `subnet_id` must not be specified.
+  - Both `subnet_address_prefixes` and `virtual_network_address_space` must be provided.
+- Set to `false` to use an existing Subnet. In this case:
+  - `subnet_id` must be specified.
+  - `subnet_address_prefixes` and `virtual_network_address_space` must not be provided.
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_init"></a> [init](#input\_init)
 
@@ -282,6 +284,22 @@ Default:
 ]
 ```
 
+### <a name="input_subnet_address_prefixes"></a> [subnet\_address\_prefixes](#input\_subnet\_address\_prefixes)
+
+Description: A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network.
+
+Type: `list(string)`
+
+Default: `[]`
+
+### <a name="input_subnet_id"></a> [subnet\_id](#input\_subnet\_id)
+
+Description: The ID of an existing subnet where the Launchpad will be deployed. If `subnet_id` is specified, both `subnet_address_prefixes` and `virtual_network_address_space` must be not set. Conversely, if `subnet_id` is not specified, both `subnet_address_prefixes` and `virtual_network_address_space` must be provided.
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_subscription_ids"></a> [subscription\_ids](#input\_subscription\_ids)
 
 Description: A list of subscription IDs, which the Launchpad will manage.Each must be exactly 36 characters long.
@@ -297,6 +315,14 @@ Description: A mapping of tags which should be assigned to all resources in this
 Type: `map(string)`
 
 Default: `{}`
+
+### <a name="input_virtual_network_address_space"></a> [virtual\_network\_address\_space](#input\_virtual\_network\_address\_space)
+
+Description: A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet.
+
+Type: `list(string)`
+
+Default: `[]`
 
 ## Outputs
 
@@ -328,17 +354,17 @@ Description: The name of the Azure Network Security Group (NSG) associated with 
 
 ### <a name="output_subnet_id"></a> [subnet\_id](#output\_subnet\_id)
 
-Description: The ID of the subnet within the Virtual Network, associated with the Launchpad production environment.
+Description: The ID of the subnet within the Virtual Network associated with the Launchpad. If `var.subnet_id` is specified, its value is used for this output. Otherwise, the ID of the subnet created by this module is returned.
 
 ### <a name="output_subnet_name"></a> [subnet\_name](#output\_subnet\_name)
 
-Description: The name of the subnet within the Virtual Network, associated with the Launchpad production environment.
+Description: The name of the subnet within the Virtual Network associated with the Launchpad. If `var.subnet_id` is not specified, the name of the subnet created by this module is returned. Otherwise, the name is extracted from the specified `var.subnet_id`.
 
 ### <a name="output_virtual_network_id"></a> [virtual\_network\_id](#output\_virtual\_network\_id)
 
-Description: The ID of the Azure Virtual Network (VNet) associated with the Launchpad.
+Description: The ID of the Azure Virtual Network (VNet) associated with the Launchpad. If `var.subnet_id` is not specified, the ID of the Virtual Network created by this module is returned. Otherwise, the Virtual Network ID is derived from the specified `var.subnet_id`.
 
 ### <a name="output_virtual_network_name"></a> [virtual\_network\_name](#output\_virtual\_network\_name)
 
-Description: The name of the Azure Virtual Network (VNet) associated with the Launchpad.
+Description: The name of the Azure Virtual Network (VNet) associated with the Launchpad. If `var.subnet_id` is not specified, the name of the Virtual Network created by this module is returned. Otherwise, the name is extracted from the specified `var.subnet_id`.
 <!-- END_TF_DOCS -->

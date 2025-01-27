@@ -1,3 +1,42 @@
+variable "create_subnet" {
+  type        = bool
+  default     = true
+  description = <<-EOT
+    Determines whether to create a new Virtual Network and Subnet.
+    - Set to `true` to create a new Virtual Network and Subnet. In this case:
+      - `subnet_id` must not be specified.
+      - Both `subnet_address_prefixes` and `virtual_network_address_space` must be provided.
+    - Set to `false` to use an existing Subnet. In this case:
+      - `subnet_id` must be specified.
+      - `subnet_address_prefixes` and `virtual_network_address_space` must not be provided.
+  EOT
+
+  validation {
+    condition = var.create_subnet ? (
+      # create_subnet = true
+      length(var.subnet_address_prefixes) > 0 &&
+      length(var.virtual_network_address_space) > 0 &&
+      var.subnet_id == null
+      ) : (
+      # create_subnet = false
+      length(var.subnet_address_prefixes) == 0 &&
+      length(var.virtual_network_address_space) == 0 &&
+      var.subnet_id != null
+    )
+    error_message = <<-EOT
+      Invalid configuration for 'create_subnet':
+
+      - When 'create_subnet' is set to 'true':
+        - 'subnet_id' must not be specified.
+        - Both 'subnet_address_prefixes' and 'virtual_network_address_space' must be provided.
+
+      - When 'create_subnet' is set to 'false':
+        - 'subnet_id' must be specified.
+        - 'subnet_address_prefixes' and 'virtual_network_address_space' must not be provided.
+    EOT
+  }
+}
+
 variable "init" {
   type        = bool
   default     = false
@@ -148,6 +187,13 @@ variable "service_endpoints" {
 variable "subnet_address_prefixes" {
   type        = list(string)
   description = "A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network."
+  default     = []
+}
+
+variable "subnet_id" {
+  type        = string
+  description = "The ID of an existing subnet where the Launchpad will be deployed. If `subnet_id` is specified, both `subnet_address_prefixes` and `virtual_network_address_space` must be not set. Conversely, if `subnet_id` is not specified, both `subnet_address_prefixes` and `virtual_network_address_space` must be provided."
+  default     = null
 }
 
 variable "subscription_ids" {
@@ -171,4 +217,5 @@ variable "tags" {
 variable "virtual_network_address_space" {
   type        = list(string)
   description = "A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet."
+  default     = []
 }
