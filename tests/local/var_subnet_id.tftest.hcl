@@ -10,7 +10,7 @@ run "should_succeed_with_existing_subnet_id" {
   command = plan
 }
 
-run "should_success_on_subnet_id_2" {
+run "should_succeed_creating_subnet" {
   variables {
     create_subnet                 = true
     subnet_address_prefixes       = ["192.168.0.0/24"]
