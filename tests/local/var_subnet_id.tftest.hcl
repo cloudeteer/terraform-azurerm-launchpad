@@ -2,7 +2,7 @@ mock_provider "azurerm" {
   source = "./tests/local/mocks"
 }
 
-run "should_success_on_subnet_id_1" {
+run "should_succeed_with_existing_subnet_id" {
   variables {
     create_subnet = false
     subnet_id     = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysubnet1"
