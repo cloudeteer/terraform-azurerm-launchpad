@@ -22,6 +22,7 @@ resource "azurerm_subnet" "this" {
 }
 
 resource "azurerm_network_security_group" "this" {
+  count               = var.create_subnet ? 1 : 0
   name                = join("-", compact(["nsg", var.name, "prd", local.location_short[var.location], var.name_suffix]))
   location            = var.location
   resource_group_name = var.resource_group_name
@@ -29,6 +30,7 @@ resource "azurerm_network_security_group" "this" {
 }
 
 resource "azurerm_subnet_network_security_group_association" "this" {
+  count                     = var.create_subnet ? 1 : 0
   subnet_id                 = local.subnet_id
   network_security_group_id = azurerm_network_security_group.this.id
 }
