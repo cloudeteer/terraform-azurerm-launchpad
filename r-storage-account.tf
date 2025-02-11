@@ -1,4 +1,12 @@
+locals {
+  storage_account_name = var.name_overrides.storage_account != null ? var.name_overrides.storage_account : join("", compact([
+    "st", var.name, "prd", local.location_short[var.location], random_string.stlaunchpadprd_suffix[0].result
+  ]))
+}
+
 resource "random_string" "stlaunchpadprd_suffix" {
+  count = var.name_overrides.storage_account != null ? 0 : 1
+
   length  = 3
   special = false
   upper   = false
@@ -13,9 +21,7 @@ resource "azurerm_management_lock" "storage_account_lock" {
 }
 
 resource "azurerm_storage_account" "this" {
-  name = join("", compact([
-    "st", var.name, "prd", local.location_short[var.location], random_string.stlaunchpadprd_suffix.result
-  ]))
+  name                = local.storage_account_name
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags

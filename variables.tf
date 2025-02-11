@@ -98,6 +98,16 @@ variable "name" {
   default     = "launchpad"
 }
 
+variable "name_overrides" {
+  description = "Override names for resources created by this module."
+
+  type = object({
+    storage_account        = optional(string)
+    subnet                 = optional(string)
+    user_assigned_identity = optional(string)
+  })
+}
+
 variable "name_suffix" {
   type        = string
   description = <<-EOD

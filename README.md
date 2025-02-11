@@ -101,6 +101,20 @@ Description: The geographic location where the resources will be deployed. This 
 
 Type: `string`
 
+### <a name="input_name_overrides"></a> [name\_overrides](#input\_name\_overrides)
+
+Description: Override names for resources created by this module.
+
+Type:
+
+```hcl
+object({
+    storage_account        = optional(string)
+    subnet                 = optional(string)
+    user_assigned_identity = optional(string)
+  })
+```
+
 ### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
 
 Description: The name of the resource group in which the virtual machine should exist. Changing this forces a new resource to be created.

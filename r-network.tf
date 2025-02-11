@@ -1,5 +1,6 @@
 locals {
-  subnet_id = var.subnet_id == null ? azurerm_subnet.this[0].id : var.subnet_id
+  subnet_id   = var.subnet_id == null ? azurerm_subnet.this[0].id : var.subnet_id
+  subnet_name = var.name_overrides.subnet != null ? var.name_overrides.subnet : join("-", compact(["snet", var.name, "prd", local.location_short[var.location], var.name_suffix]))
 }
 
 resource "azurerm_virtual_network" "this" {
@@ -14,7 +15,7 @@ resource "azurerm_virtual_network" "this" {
 
 resource "azurerm_subnet" "this" {
   count                = var.create_subnet ? 1 : 0
-  name                 = join("-", compact(["snet", var.name, "prd", local.location_short[var.location], var.name_suffix]))
+  name                 = local.subnet_name
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.this[0].name
   address_prefixes     = var.subnet_address_prefixes
