@@ -123,6 +123,14 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
+### <a name="input_create_role_assignments"></a> [create\_role\_assignments](#input\_create\_role\_assignments)
+
+Description: Determines whether to create role assignments for the specified management groups and subscriptions.
+
+Type: `bool`
+
+Default: `true`
+
 ### <a name="input_create_subnet"></a> [create\_subnet](#input\_create\_subnet)
 
 Description: Determines whether to create a new Virtual Network and Subnet.

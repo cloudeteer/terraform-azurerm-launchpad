@@ -1,3 +1,14 @@
+variable "create_role_assignments" {
+  type        = bool
+  default     = true
+  description = "Determines whether to create role assignments for the specified management groups and subscriptions."
+
+  validation {
+    condition     = var.create_role_assignments ? true : length(var.management_group_names) == 0 && length(var.subscription_ids) == 0
+    error_message = "When 'create_role_assignments' is set to 'false', 'management_group_names' and 'subscription_ids' must be empty."
+  }
+}
+
 variable "create_subnet" {
   type        = bool
   default     = true

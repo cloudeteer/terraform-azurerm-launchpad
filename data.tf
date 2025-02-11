@@ -1,7 +1,10 @@
 data "azurerm_client_config" "current" {}
 
 data "azurerm_subscription" "managed_by_launchpad" {
-  for_each        = toset(concat(var.subscription_ids, [data.azurerm_client_config.current.subscription_id]))
+  for_each = toset(concat(var.subscription_ids, compact(
+    [var.create_role_assignments ? data.azurerm_client_config.current.subscription_id : null])
+  ))
+
   subscription_id = each.key
 }
 
