@@ -22,13 +22,13 @@ output "key_vault_private_endpoint_private_ip_address" {
 }
 
 output "network_security_group_id" {
-  value       = azurerm_network_security_group.this.id
-  description = "The ID of the Azure Network Security Group (NSG) associated with the Launchpad."
+  value       = (var.subnet_id == null ? azurerm_network_security_group.this[0].id : null)
+  description = "The ID of the Azure Network Security Group (NSG) associated with the Launchpad. If `var.subnet_id` is specified, no Azure Network Security Group (NSG) ID is returned."
 }
 
 output "network_security_group_name" {
-  value       = azurerm_network_security_group.this.name
-  description = "The name of the Azure Network Security Group (NSG) associated with the Launchpad."
+  value       = (var.subnet_id == null ? azurerm_network_security_group.this[0].name : null)
+  description = "The name of the Azure Network Security Group (NSG) associated with the Launchpad. If `var.subnet_id` is specified, no Azure Network Security Group (NSG) Name is returned."
 }
 
 output "subnet_id" {

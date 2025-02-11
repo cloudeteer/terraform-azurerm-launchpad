@@ -346,11 +346,11 @@ Description: The private IP address of the private endpoint used by the Key Vaul
 
 ### <a name="output_network_security_group_id"></a> [network\_security\_group\_id](#output\_network\_security\_group\_id)
 
-Description: The ID of the Azure Network Security Group (NSG) associated with the Launchpad.
+Description: The ID of the Azure Network Security Group (NSG) associated with the Launchpad. If `var.subnet_id` is specified, no Azure Network Security Group (NSG) ID is returned.
 
 ### <a name="output_network_security_group_name"></a> [network\_security\_group\_name](#output\_network\_security\_group\_name)
 
-Description: The name of the Azure Network Security Group (NSG) associated with the Launchpad.
+Description: The name of the Azure Network Security Group (NSG) associated with the Launchpad. If `var.subnet_id` is specified, no Azure Network Security Group (NSG) Name is returned.
 
 ### <a name="output_subnet_id"></a> [subnet\_id](#output\_subnet\_id)
 

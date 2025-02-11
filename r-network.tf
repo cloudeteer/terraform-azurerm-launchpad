@@ -32,5 +32,5 @@ resource "azurerm_network_security_group" "this" {
 resource "azurerm_subnet_network_security_group_association" "this" {
   count                     = var.create_subnet ? 1 : 0
   subnet_id                 = local.subnet_id
-  network_security_group_id = azurerm_network_security_group.this.id
+  network_security_group_id = azurerm_network_security_group.this[0].id
 }
