@@ -66,12 +66,12 @@ run "should_fail_with_given_subnet_id_and_create_subnet" {
 
 run "should_fail_with_given_subnet_and_created_nsg" {
   variables {
-   create_subnet = false
+   create_subnet  = false
     subnet_id     = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysubnet1"
   }
   command = plan
   assert {
-    condition = length(azurerm_network_security_group.this) == 0
+    condition     = length(azurerm_network_security_group.this) == 0
     error_message = "No Network Security Group (NSG) should be created if you bring your own Subnet."
   }
 }
