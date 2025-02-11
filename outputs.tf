@@ -17,7 +17,7 @@ output "LAUNCHPAD_AZURE_TENANT_ID" {
 }
 
 output "key_vault_private_endpoint_private_ip_address" {
-  value       = one(azurerm_private_endpoint.key_vault.private_service_connection[*].private_ip_address)
+  value       = var.create_key_vault ? (azurerm_private_endpoint.key_vault[0].private_service_connection[*].private_ip_address) : null
   description = "The private IP address of the private endpoint used by the Key Vault."
 }
 

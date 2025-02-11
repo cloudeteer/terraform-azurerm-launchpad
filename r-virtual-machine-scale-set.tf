@@ -1,8 +1,8 @@
 locals {
   admin_username = "azureadmin"
   github_runner_script = base64gzip(templatefile("${path.module}/assets/install_github_actions_runner.sh.tftpl", {
-    key_vault_hostname                  = "${azurerm_key_vault.this.name}.vault.azure.net"
-    private_endpoint_key_vault_ip       = one(azurerm_private_endpoint.key_vault.private_service_connection[*].private_ip_address)
+    key_vault_hostname                  = var.create_key_vault ? "${azurerm_key_vault.this[0].name}.vault.azure.net" : "dummy.localhost.local"
+    private_endpoint_key_vault_ip       = var.create_key_vault ? one(azurerm_private_endpoint.key_vault[0].private_service_connection[*].private_ip_address) : "127.0.0.1"
     private_endpoint_storage_account_ip = one(azurerm_private_endpoint.storage_account.private_service_connection[*].private_ip_address)
     storage_account_hostname            = azurerm_storage_account.this.primary_blob_host
 
@@ -133,11 +133,12 @@ resource "random_password" "virtual_machine_scale_set_admin_password" {
 #trivy:ignore:avd-azu-0017
 #trivy:ignore:avd-azu-0013
 resource "azurerm_key_vault_secret" "virtual_machine_scale_set_admin_password" {
+  count = var.create_key_vault ? 1 : 0
 
   name = "${azurerm_linux_virtual_machine_scale_set.this.name}-${azurerm_linux_virtual_machine_scale_set.this.admin_username}-password"
 
   content_type = "Password"
-  key_vault_id = azurerm_key_vault.this.id
+  key_vault_id = azurerm_key_vault.this[0].id
   value        = random_password.virtual_machine_scale_set_admin_password.result
 
   depends_on = [azurerm_role_assignment.key_vault_admin_current_user]
