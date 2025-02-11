@@ -352,6 +352,10 @@ Description: The ID of the Azure Network Security Group (NSG) associated with th
 
 Description: The name of the Azure Network Security Group (NSG) associated with the Launchpad. If `var.subnet_id` is specified, no Azure Network Security Group (NSG) Name is returned.
 
+### <a name="output_principal_id"></a> [principal\_id](#output\_principal\_id)
+
+Description: The principal ID of the Azure user identity assigned to the Launchpad.
+
 ### <a name="output_subnet_id"></a> [subnet\_id](#output\_subnet\_id)
 
 Description: The ID of the subnet within the Virtual Network associated with the Launchpad. If `var.subnet_id` is specified, its value is used for this output. Otherwise, the ID of the subnet created by this module is returned.
