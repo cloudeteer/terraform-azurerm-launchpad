@@ -69,6 +69,7 @@ The following resources are used by this module:
 - [azurerm_key_vault.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) (resource)
 - [azurerm_key_vault_secret.virtual_machine_scale_set_admin_password](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) (resource)
 - [azurerm_linux_virtual_machine_scale_set.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set) (resource)
+- [azurerm_management_lock.key_vault_lock](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.storage_account_lock](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_network_security_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) (resource)
 - [azurerm_private_endpoint.key_vault](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
@@ -169,6 +170,14 @@ Description: Set the IP Address of your current public IP in order to access the
 Type: `string`
 
 Default: `null`
+
+### <a name="input_key_vault_deletion_lock"></a> [key\_vault\_deletion\_lock](#input\_key\_vault\_deletion\_lock)
+
+Description: Whether a deletion lock should be applied to the Key Vault to prevent accidental deletion and ensure data loss prevention.
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_key_vault_private_dns_zone_ids"></a> [key\_vault\_private\_dns\_zone\_ids](#input\_key\_vault\_private\_dns\_zone\_ids)
 
@@ -291,6 +300,14 @@ Default:
   "Microsoft.Storage"
 ]
 ```
+
+### <a name="input_storage_account_deletion_lock"></a> [storage\_account\_deletion\_lock](#input\_storage\_account\_deletion\_lock)
+
+Description: Whether a deletion lock should be applied to the Storage Account to prevent accidental deletion and ensure data loss prevention.
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_subnet_address_prefixes"></a> [subnet\_address\_prefixes](#input\_subnet\_address\_prefixes)
 

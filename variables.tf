@@ -74,6 +74,12 @@ variable "init_access_ip_address" {
   }
 }
 
+variable "key_vault_deletion_lock" {
+  type        = bool
+  description = "Whether a deletion lock should be applied to the Key Vault to prevent accidental deletion and ensure data loss prevention."
+  default     = true
+}
+
 variable "key_vault_private_dns_zone_ids" {
   type        = list(string)
   default     = []
@@ -193,6 +199,12 @@ variable "service_endpoints" {
 
   type    = list(string)
   default = ["Microsoft.KeyVault", "Microsoft.Storage"]
+}
+
+variable "storage_account_deletion_lock" {
+  type        = bool
+  description = "Whether a deletion lock should be applied to the Storage Account to prevent accidental deletion and ensure data loss prevention."
+  default     = true
 }
 
 variable "subnet_address_prefixes" {

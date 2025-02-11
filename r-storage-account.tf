@@ -5,11 +5,11 @@ resource "random_string" "stlaunchpadprd_suffix" {
 }
 
 resource "azurerm_management_lock" "storage_account_lock" {
-  count      = var.init ? 0 : 1
+  count      = var.init || !var.storage_account_deletion_lock ? 0 : 1
   name       = "storage_account_lock"
   scope      = azurerm_storage_account.this.id
   lock_level = "CanNotDelete"
-  notes      = "For safety reasons, the Storage Account can not be deleted."
+  notes      = "This lock prevents the deletion of the Storage Account, which contains critical infrastructure information."
 }
 
 resource "azurerm_storage_account" "this" {
