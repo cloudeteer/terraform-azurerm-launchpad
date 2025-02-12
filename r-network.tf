@@ -4,7 +4,7 @@ locals {
     join("-", compact(["nsg", var.name, "prd", local.location_short[var.location], var.name_suffix]))
   )
 
-  subnet_id = var.subnet_id == null ? azurerm_subnet.this[0].id : var.subnet_id
+  subnet_id = coalesce(var.subnet_id, azurerm_subnet.this[0].id)
 
   subnet_name = coalesce(
     var.name_overrides.subnet,
