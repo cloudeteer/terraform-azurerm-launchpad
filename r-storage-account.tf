@@ -1,24 +1,4 @@
-locals {
-  storage_account_name = coalesce(
-    var.name_overrides.storage_account,
-    join("", compact([
-      "st", var.name, "prd", local.location_short[var.location], random_string.stlaunchpadprd_suffix[0].result
-    ]))
-  )
-
-  storage_container_name = coalesce(var.name_overrides.storage_container, "tfstate")
-
-  storage_private_endpoint_name = coalesce(
-    var.name_overrides.storage_private_endpoint,
-    join("-", compact([
-      "pe", azurerm_storage_account.this.name, "prd", local.location_short[var.location], var.name_suffix
-    ]))
-  )
-}
-
 resource "random_string" "stlaunchpadprd_suffix" {
-  count = var.name_overrides.storage_account != null ? 0 : 1
-
   length  = 3
   special = false
   upper   = false
@@ -33,7 +13,9 @@ resource "azurerm_management_lock" "storage_account_lock" {
 }
 
 resource "azurerm_storage_account" "this" {
-  name                = local.storage_account_name
+  name = join("", compact([
+    "st", var.name, "prd", local.location_short[var.location], random_string.stlaunchpadprd_suffix.result
+  ]))
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
@@ -72,13 +54,15 @@ resource "azurerm_storage_account" "this" {
 }
 
 resource "azurerm_storage_container" "this" {
-  name                  = local.storage_container_name
+  name                  = "tfstate"
   storage_account_name  = azurerm_storage_account.this.name
   container_access_type = "private"
 }
 
 resource "azurerm_private_endpoint" "storage_account" {
-  name                = local.storage_private_endpoint_name
+  name = join("-", compact([
+    "pe", azurerm_storage_account.this.name, "prd", local.location_short[var.location], var.name_suffix
+  ]))
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags

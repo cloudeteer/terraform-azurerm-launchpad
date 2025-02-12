@@ -13,15 +13,10 @@ locals {
     runner_user        = var.runner_user
     runner_version     = var.runner_version
   }))
-
-  virtual_machine_scale_set_name = coalesce(
-    var.name_overrides.virtual_machine_scale_set_name,
-    join("-", compact(["vmss", var.name, "prd", local.location_short[var.location], var.name_suffix]))
-  )
 }
 
 resource "azurerm_linux_virtual_machine_scale_set" "this" {
-  name                = local.virtual_machine_scale_set_name
+  name                = join("-", compact(["vmss", var.name, "prd", local.location_short[var.location], var.name_suffix]))
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags

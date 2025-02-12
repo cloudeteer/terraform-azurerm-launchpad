@@ -1,21 +1,5 @@
-locals {
-  key_vault_name = coalesce(
-    var.name_overrides.key_vault,
-    join("", compact([
-      "kv", var.name, "prd", local.location_short[var.location], random_string.kvlaunchpadprd_suffix[0].result
-    ]))
-  )
-
-  key_vault_private_endpoint_name = coalesce(
-    var.name_overrides.key_vault_private_endpoint,
-    join("-", compact([
-      "pe", azurerm_key_vault.this[0].name, "prd", local.location_short[var.location], var.name_suffix
-    ]))
-  )
-}
-
 resource "random_string" "kvlaunchpadprd_suffix" {
-  count = var.create_key_vault && var.name_overrides.key_vault == null ? 1 : 0
+  count = var.create_key_vault ? 1 : 0
 
   length  = 3
   special = false
@@ -38,7 +22,9 @@ resource "azurerm_management_lock" "key_vault_lock" {
 resource "azurerm_key_vault" "this" {
   count = var.create_key_vault ? 1 : 0
 
-  name                = local.key_vault_name
+  name = join("", compact([
+    "kv", var.name, "prd", local.location_short[var.location], random_string.kvlaunchpadprd_suffix[0].result
+  ]))
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
@@ -62,7 +48,9 @@ resource "azurerm_key_vault" "this" {
 resource "azurerm_private_endpoint" "key_vault" {
   count = var.create_key_vault ? 1 : 0
 
-  name                = local.key_vault_private_endpoint_name
+  name = join("-", compact([
+    "pe", azurerm_key_vault.this[0].name, "prd", local.location_short[var.location], var.name_suffix
+  ]))
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
