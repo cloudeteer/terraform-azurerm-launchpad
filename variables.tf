@@ -1,3 +1,9 @@
+variable "create_key_vault" {
+  type        = bool
+  default     = true
+  description = "Create a central Key Vault which can be used to store secrets and keys securely during workload deployments."
+}
+
 variable "create_role_assignments" {
   type        = bool
   default     = true

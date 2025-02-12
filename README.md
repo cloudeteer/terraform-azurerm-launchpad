@@ -124,6 +124,14 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
+### <a name="input_create_key_vault"></a> [create\_key\_vault](#input\_create\_key\_vault)
+
+Description: Create a central Key Vault which can be used to store secrets and keys securely during workload deployments.
+
+Type: `bool`
+
+Default: `true`
+
 ### <a name="input_create_role_assignments"></a> [create\_role\_assignments](#input\_create\_role\_assignments)
 
 Description: Determines whether to create role assignments for the specified management groups and subscriptions.
@@ -367,7 +375,7 @@ Description: The tenant ID of the Azure user identity assigned to the Launchpad
 
 ### <a name="output_key_vault_private_endpoint_private_ip_address"></a> [key\_vault\_private\_endpoint\_private\_ip\_address](#output\_key\_vault\_private\_endpoint\_private\_ip\_address)
 
-Description: The private IP address of the private endpoint used by the Key Vault.
+Description: The private IP address of the private endpoint associated with the Key Vault. This endpoint is created only if `create_key_vault` is set to `true`. If `create_key_vault` is `false`, this output will be `null`.
 
 ### <a name="output_network_security_group_id"></a> [network\_security\_group\_id](#output\_network\_security\_group\_id)
 
