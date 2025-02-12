@@ -2,6 +2,12 @@ mock_provider "azurerm" {
   source = "./tests/local/mocks"
 }
 
+# Unset variables set as default in variables.auto.tfvars
+variables {
+  subnet_address_prefixes       = []
+  virtual_network_address_space = []
+}
+
 run "should_succeed_with_existing_subnet_id" {
   variables {
     create_subnet = false
