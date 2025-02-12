@@ -1,3 +1,14 @@
+variable "create_role_assignments" {
+  type        = bool
+  default     = true
+  description = "Determines whether to create role assignments for the specified management groups and subscriptions."
+
+  validation {
+    condition     = var.create_role_assignments ? true : length(var.management_group_names) == 0 && length(var.subscription_ids) == 0
+    error_message = "When 'create_role_assignments' is set to 'false', 'management_group_names' and 'subscription_ids' must be empty."
+  }
+}
+
 variable "create_subnet" {
   type        = bool
   default     = true
@@ -61,6 +72,12 @@ variable "init_access_ip_address" {
     condition     = (var.init && var.init_access_ip_address != null) || (!var.init && var.init_access_ip_address == null)
     error_message = "init_access_ip_address ERROR!"
   }
+}
+
+variable "key_vault_deletion_lock" {
+  type        = bool
+  description = "Whether a deletion lock should be applied to the Key Vault to prevent accidental deletion and ensure data loss prevention."
+  default     = true
 }
 
 variable "key_vault_private_dns_zone_ids" {
@@ -182,6 +199,12 @@ variable "service_endpoints" {
 
   type    = list(string)
   default = ["Microsoft.KeyVault", "Microsoft.Storage"]
+}
+
+variable "storage_account_deletion_lock" {
+  type        = bool
+  description = "Whether a deletion lock should be applied to the Storage Account to prevent accidental deletion and ensure data loss prevention."
+  default     = true
 }
 
 variable "subnet_address_prefixes" {

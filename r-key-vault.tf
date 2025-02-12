@@ -8,6 +8,14 @@ locals {
   key_vault_private_link_enabled = length((var.key_vault_virtual_network_subnet_ids)) > 0
 }
 
+resource "azurerm_management_lock" "key_vault_lock" {
+  count      = var.init || !var.key_vault_deletion_lock ? 0 : 1
+  name       = "key_vault_lock"
+  scope      = azurerm_key_vault.this.id
+  lock_level = "CanNotDelete"
+  notes      = "This lock prevents the deletion of the Key Vault, which contains critical infrastructure information."
+}
+
 resource "azurerm_key_vault" "this" {
   name = join("", compact([
     "kv", var.name, "prd", local.location_short[var.location], random_string.kvlaunchpadprd_suffix.result

@@ -35,7 +35,7 @@ resource "azurerm_role_assignment" "subscription_owner" {
 }
 
 resource "azurerm_role_assignment" "resource_specific" {
-  for_each = {
+  for_each = var.create_role_assignments ? {
     storage_blob_owner = {
       role_definition_name = "Storage Blob Data Owner"
       scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
@@ -44,7 +44,7 @@ resource "azurerm_role_assignment" "resource_specific" {
       role_definition_name = "Key Vault Administrator"
       scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
     }
-  }
+  } : {}
 
   principal_id         = azurerm_user_assigned_identity.this.principal_id
   scope                = each.value.scope
