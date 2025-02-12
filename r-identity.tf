@@ -36,15 +36,17 @@ resource "azurerm_role_assignment" "subscription_owner" {
 
 resource "azurerm_role_assignment" "resource_specific" {
   for_each = var.create_role_assignments ? {
-    storage_blob_owner = {
-      role_definition_name = "Storage Blob Data Owner"
-      scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
-    },
-    key_vault_admin = {
-      role_definition_name = "Key Vault Administrator"
-      scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
-    }
-  } : {}
+    for key, value in {
+      storage_blob_owner = {
+        role_definition_name = "Storage Blob Data Owner"
+        scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
+      },
+      key_vault_admin = var.create_key_vault ? {
+        role_definition_name = "Key Vault Administrator"
+        scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
+      } : null
+  } : key => value if value != null } : {}
+
 
   principal_id         = azurerm_user_assigned_identity.this.principal_id
   scope                = each.value.scope
