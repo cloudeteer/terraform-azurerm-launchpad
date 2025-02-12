@@ -1,14 +1,5 @@
-locals {
-  user_assigned_identity_name = coalesce(
-    var.name_overrides.user_assigned_identity,
-    join("-", compact([
-      "id", var.name, "prd", local.location_short[var.location], var.name_suffix
-    ]))
-  )
-}
-
 resource "azurerm_user_assigned_identity" "this" {
-  name                = local.user_assigned_identity_name
+  name                = join("-", compact(["id", var.name, "prd", local.location_short[var.location], var.name_suffix]))
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
