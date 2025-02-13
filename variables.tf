@@ -115,6 +115,25 @@ variable "name" {
   default     = "launchpad"
 }
 
+variable "name_overrides" {
+  description = "This variable allows you to overwrite generated names of most resources created by this module. This can be handy when importing existing resources to the Terraform state. e.g. using an existing storage Account but not bringing it into the module but import it into the state and let it be managed by the module."
+
+  type = object({
+    key_vault                      = optional(string)
+    key_vault_private_endpoint     = optional(string)
+    virtual_machine_scale_set_name = optional(string)
+    network_security_group         = optional(string)
+    storage_account                = optional(string)
+    storage_container              = optional(string)
+    storage_private_endpoint       = optional(string)
+    subnet                         = optional(string)
+    user_assigned_identity         = optional(string)
+    virtual_network                = optional(string)
+  })
+
+  default = {}
+}
+
 variable "name_suffix" {
   type        = string
   description = <<-EOD
