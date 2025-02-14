@@ -66,10 +66,11 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   # trigger instance update
   custom_data = base64encode("#cloud-config\n#${sha256(local.github_runner_script)}")
 
+  # https://documentation.ubuntu.com/azure/en/latest/azure-how-to/instances/find-ubuntu-images/
   source_image_reference {
     publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts-arm64"
+    offer     = "ubuntu-24_04-lts"
+    sku       = "server-arm64"
     version   = "latest"
   }
 
