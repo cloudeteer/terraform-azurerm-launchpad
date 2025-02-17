@@ -70,6 +70,9 @@ id "$RUNNER_USER" &>/dev/null || useradd --create-home --system \
   --shell /usr/sbin/nologin \
   "$RUNNER_USER"
 
+# Add GitHub SSH host keys to known hosts
+sudo -u "$RUNNER_USER" -- ssh-keyscan -t rsa github.com | sudo -u "$RUNNER_USER" -- tee -a "/home/$RUNNER_USER/.ssh/known_hosts"
+
 # Create base install directory
 mkdir -p /opt/actions-runner
 cd /opt/actions-runner
