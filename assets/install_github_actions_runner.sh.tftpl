@@ -71,6 +71,7 @@ id "$RUNNER_USER" &>/dev/null || useradd --create-home --system \
   "$RUNNER_USER"
 
 # Add GitHub SSH host keys to known hosts
+sudo -u "$RUNNER_USER" -- mkdir -d /home/$RUNNER_USER/.ssh
 sudo -u "$RUNNER_USER" -- ssh-keyscan -t rsa github.com | sudo -u "$RUNNER_USER" -- tee -a "/home/$RUNNER_USER/.ssh/known_hosts"
 
 # Create base install directory
