@@ -69,6 +69,7 @@ The following resources are used by this module:
 - [azurerm_key_vault.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) (resource)
 - [azurerm_key_vault_secret.virtual_machine_scale_set_admin_password](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) (resource)
 - [azurerm_linux_virtual_machine_scale_set.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set) (resource)
+- [azurerm_management_lock.key_vault_lock](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.storage_account_lock](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_network_security_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) (resource)
 - [azurerm_private_endpoint.key_vault](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
@@ -119,21 +120,39 @@ Description: Specify the GitHub repository owner and name seperated by `/` to re
 
 Type: `string`
 
-### <a name="input_subnet_address_prefixes"></a> [subnet\_address\_prefixes](#input\_subnet\_address\_prefixes)
-
-Description: A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network.
-
-Type: `list(string)`
-
-### <a name="input_virtual_network_address_space"></a> [virtual\_network\_address\_space](#input\_virtual\_network\_address\_space)
-
-Description: A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet.
-
-Type: `list(string)`
-
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### <a name="input_create_key_vault"></a> [create\_key\_vault](#input\_create\_key\_vault)
+
+Description: Create a central Key Vault which can be used to store secrets and keys securely during workload deployments.
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_create_role_assignments"></a> [create\_role\_assignments](#input\_create\_role\_assignments)
+
+Description: Determines whether to create role assignments for the specified management groups and subscriptions.
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_create_subnet"></a> [create\_subnet](#input\_create\_subnet)
+
+Description: Determines whether to create a new Virtual Network and Subnet.
+- Set to `true` to create a new Virtual Network and Subnet. In this case:
+  - `subnet_id` must not be specified.
+  - Both `subnet_address_prefixes` and `virtual_network_address_space` must be provided.
+- Set to `false` to use an existing Subnet. In this case:
+  - `subnet_id` must be specified.
+  - `subnet_address_prefixes` and `virtual_network_address_space` must not be provided.
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_init"></a> [init](#input\_init)
 
@@ -145,7 +164,8 @@ Default: `false`
 
 ### <a name="input_init_access_azure_principal_id"></a> [init\_access\_azure\_principal\_id](#input\_init\_access\_azure\_principal\_id)
 
-Description: n/a
+Description: Set the Azure Principal ID which will be given access to the storage account and key vault.
+**NOTE**: This is only required when `init` is set to `true`.
 
 Type: `string`
 
@@ -158,6 +178,14 @@ Description: Set the IP Address of your current public IP in order to access the
 Type: `string`
 
 Default: `null`
+
+### <a name="input_key_vault_deletion_lock"></a> [key\_vault\_deletion\_lock](#input\_key\_vault\_deletion\_lock)
+
+Description: Whether a deletion lock should be applied to the Key Vault to prevent accidental deletion and ensure data loss prevention.
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_key_vault_private_dns_zone_ids"></a> [key\_vault\_private\_dns\_zone\_ids](#input\_key\_vault\_private\_dns\_zone\_ids)
 
@@ -198,6 +226,29 @@ Description: The base name applied to all resources created by this module.
 Type: `string`
 
 Default: `"launchpad"`
+
+### <a name="input_name_overrides"></a> [name\_overrides](#input\_name\_overrides)
+
+Description: This variable allows you to overwrite generated names of most resources created by this module. This can be handy when importing existing resources to the Terraform state. e.g. using an existing storage Account but not bringing it into the module but import it into the state and let it be managed by the module.
+
+Type:
+
+```hcl
+object({
+    key_vault                      = optional(string)
+    key_vault_private_endpoint     = optional(string)
+    virtual_machine_scale_set_name = optional(string)
+    network_security_group         = optional(string)
+    storage_account                = optional(string)
+    storage_container              = optional(string)
+    storage_private_endpoint       = optional(string)
+    subnet                         = optional(string)
+    user_assigned_identity         = optional(string)
+    virtual_network                = optional(string)
+  })
+```
+
+Default: `{}`
 
 ### <a name="input_name_suffix"></a> [name\_suffix](#input\_name\_suffix)
 
@@ -289,6 +340,30 @@ Default:
 ]
 ```
 
+### <a name="input_storage_account_deletion_lock"></a> [storage\_account\_deletion\_lock](#input\_storage\_account\_deletion\_lock)
+
+Description: Whether a deletion lock should be applied to the Storage Account to prevent accidental deletion and ensure data loss prevention.
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_subnet_address_prefixes"></a> [subnet\_address\_prefixes](#input\_subnet\_address\_prefixes)
+
+Description: A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network.
+
+Type: `list(string)`
+
+Default: `[]`
+
+### <a name="input_subnet_id"></a> [subnet\_id](#input\_subnet\_id)
+
+Description: The ID of an existing subnet where the Launchpad will be deployed. If `subnet_id` is specified, both `subnet_address_prefixes` and `virtual_network_address_space` must be not set. Conversely, if `subnet_id` is not specified, both `subnet_address_prefixes` and `virtual_network_address_space` must be provided.
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_subscription_ids"></a> [subscription\_ids](#input\_subscription\_ids)
 
 Description: A list of subscription IDs, which the Launchpad will manage.Each must be exactly 36 characters long.
@@ -304,6 +379,14 @@ Description: A mapping of tags which should be assigned to all resources in this
 Type: `map(string)`
 
 Default: `{}`
+
+### <a name="input_virtual_network_address_space"></a> [virtual\_network\_address\_space](#input\_virtual\_network\_address\_space)
+
+Description: A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet.
+
+Type: `list(string)`
+
+Default: `[]`
 
 ## Outputs
 
@@ -323,29 +406,33 @@ Description: The tenant ID of the Azure user identity assigned to the Launchpad
 
 ### <a name="output_key_vault_private_endpoint_private_ip_address"></a> [key\_vault\_private\_endpoint\_private\_ip\_address](#output\_key\_vault\_private\_endpoint\_private\_ip\_address)
 
-Description: The private IP address of the private endpoint used by the Key Vault.
+Description: The private IP address of the private endpoint associated with the Key Vault. This endpoint is created only if `create_key_vault` is set to `true`. If `create_key_vault` is `false`, this output will be `null`.
 
 ### <a name="output_network_security_group_id"></a> [network\_security\_group\_id](#output\_network\_security\_group\_id)
 
-Description: The ID of the Azure Network Security Group (NSG) associated with the Launchpad.
+Description: The ID of the Azure Network Security Group (NSG) associated with the Launchpad. If `var.subnet_id` is specified, no Azure Network Security Group (NSG) ID is returned.
 
 ### <a name="output_network_security_group_name"></a> [network\_security\_group\_name](#output\_network\_security\_group\_name)
 
-Description: The name of the Azure Network Security Group (NSG) associated with the Launchpad.
+Description: The name of the Azure Network Security Group (NSG) associated with the Launchpad. If `var.subnet_id` is specified, no Azure Network Security Group (NSG) Name is returned.
+
+### <a name="output_principal_id"></a> [principal\_id](#output\_principal\_id)
+
+Description: The principal ID of the Azure user identity assigned to the Launchpad.
 
 ### <a name="output_subnet_id"></a> [subnet\_id](#output\_subnet\_id)
 
-Description: The ID of the subnet within the Virtual Network, associated with the Launchpad production environment.
+Description: The ID of the subnet within the Virtual Network associated with the Launchpad. If `var.subnet_id` is specified, its value is used for this output. Otherwise, the ID of the subnet created by this module is returned.
 
 ### <a name="output_subnet_name"></a> [subnet\_name](#output\_subnet\_name)
 
-Description: The name of the subnet within the Virtual Network, associated with the Launchpad production environment.
+Description: The name of the subnet within the Virtual Network associated with the Launchpad. If `var.subnet_id` is not specified, the name of the subnet created by this module is returned. Otherwise, the name is extracted from the specified `var.subnet_id`.
 
 ### <a name="output_virtual_network_id"></a> [virtual\_network\_id](#output\_virtual\_network\_id)
 
-Description: The ID of the Azure Virtual Network (VNet) associated with the Launchpad.
+Description: The ID of the Azure Virtual Network (VNet) associated with the Launchpad. If `var.subnet_id` is not specified, the ID of the Virtual Network created by this module is returned. Otherwise, the Virtual Network ID is derived from the specified `var.subnet_id`.
 
 ### <a name="output_virtual_network_name"></a> [virtual\_network\_name](#output\_virtual\_network\_name)
 
-Description: The name of the Azure Virtual Network (VNet) associated with the Launchpad.
+Description: The name of the Azure Virtual Network (VNet) associated with the Launchpad. If `var.subnet_id` is not specified, the name of the Virtual Network created by this module is returned. Otherwise, the name is extracted from the specified `var.subnet_id`.
 <!-- END_TF_DOCS -->

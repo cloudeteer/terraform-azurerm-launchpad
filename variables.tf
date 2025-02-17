@@ -1,3 +1,59 @@
+variable "create_key_vault" {
+  type        = bool
+  default     = true
+  description = "Create a central Key Vault which can be used to store secrets and keys securely during workload deployments."
+}
+
+variable "create_role_assignments" {
+  type        = bool
+  default     = true
+  description = "Determines whether to create role assignments for the specified management groups and subscriptions."
+
+  validation {
+    condition     = var.create_role_assignments ? true : length(var.management_group_names) == 0 && length(var.subscription_ids) == 0
+    error_message = "When 'create_role_assignments' is set to 'false', 'management_group_names' and 'subscription_ids' must be empty."
+  }
+}
+
+variable "create_subnet" {
+  type        = bool
+  default     = true
+  description = <<-EOT
+    Determines whether to create a new Virtual Network and Subnet.
+    - Set to `true` to create a new Virtual Network and Subnet. In this case:
+      - `subnet_id` must not be specified.
+      - Both `subnet_address_prefixes` and `virtual_network_address_space` must be provided.
+    - Set to `false` to use an existing Subnet. In this case:
+      - `subnet_id` must be specified.
+      - `subnet_address_prefixes` and `virtual_network_address_space` must not be provided.
+  EOT
+
+  validation {
+    condition = var.create_subnet ? (
+      # create_subnet = true
+      length(var.subnet_address_prefixes) > 0 &&
+      length(var.virtual_network_address_space) > 0 &&
+      var.subnet_id == null
+      ) : (
+      # create_subnet = false
+      length(var.subnet_address_prefixes) == 0 &&
+      length(var.virtual_network_address_space) == 0 &&
+      var.subnet_id != null
+    )
+    error_message = <<-EOT
+      Invalid configuration for 'create_subnet':
+
+      - When 'create_subnet' is set to 'true':
+        - 'subnet_id' must not be specified.
+        - Both 'subnet_address_prefixes' and 'virtual_network_address_space' must be provided.
+
+      - When 'create_subnet' is set to 'false':
+        - 'subnet_id' must be specified.
+        - 'subnet_address_prefixes' and 'virtual_network_address_space' must not be provided.
+    EOT
+  }
+}
+
 variable "init" {
   type        = bool
   default     = false
@@ -5,8 +61,12 @@ variable "init" {
 }
 
 variable "init_access_azure_principal_id" {
-  type    = string
-  default = null
+  description = <<-EOD
+    Set the Azure Principal ID which will be given access to the storage account and key vault.
+    **NOTE**: This is only required when `init` is set to `true`.
+  EOD
+  type        = string
+  default     = null
 }
 
 variable "init_access_ip_address" {
@@ -18,6 +78,12 @@ variable "init_access_ip_address" {
     condition     = (var.init && var.init_access_ip_address != null) || (!var.init && var.init_access_ip_address == null)
     error_message = "init_access_ip_address ERROR!"
   }
+}
+
+variable "key_vault_deletion_lock" {
+  type        = bool
+  description = "Whether a deletion lock should be applied to the Key Vault to prevent accidental deletion and ensure data loss prevention."
+  default     = true
 }
 
 variable "key_vault_private_dns_zone_ids" {
@@ -53,6 +119,25 @@ variable "name" {
   type        = string
   description = "The base name applied to all resources created by this module."
   default     = "launchpad"
+}
+
+variable "name_overrides" {
+  description = "This variable allows you to overwrite generated names of most resources created by this module. This can be handy when importing existing resources to the Terraform state. e.g. using an existing storage Account but not bringing it into the module but import it into the state and let it be managed by the module."
+
+  type = object({
+    key_vault                      = optional(string)
+    key_vault_private_endpoint     = optional(string)
+    virtual_machine_scale_set_name = optional(string)
+    network_security_group         = optional(string)
+    storage_account                = optional(string)
+    storage_container              = optional(string)
+    storage_private_endpoint       = optional(string)
+    subnet                         = optional(string)
+    user_assigned_identity         = optional(string)
+    virtual_network                = optional(string)
+  })
+
+  default = {}
 }
 
 variable "name_suffix" {
@@ -147,9 +232,22 @@ variable "service_endpoints" {
   default = ["Microsoft.KeyVault", "Microsoft.Storage"]
 }
 
+variable "storage_account_deletion_lock" {
+  type        = bool
+  description = "Whether a deletion lock should be applied to the Storage Account to prevent accidental deletion and ensure data loss prevention."
+  default     = true
+}
+
 variable "subnet_address_prefixes" {
   type        = list(string)
   description = "A list of IP address prefixes (CIDR blocks) to be assigned to the subnet. Each entry in the list represents a CIDR block used to define the address space of the subnet within the virtual network."
+  default     = []
+}
+
+variable "subnet_id" {
+  type        = string
+  description = "The ID of an existing subnet where the Launchpad will be deployed. If `subnet_id` is specified, both `subnet_address_prefixes` and `virtual_network_address_space` must be not set. Conversely, if `subnet_id` is not specified, both `subnet_address_prefixes` and `virtual_network_address_space` must be provided."
+  default     = null
 }
 
 variable "subscription_ids" {
@@ -173,4 +271,5 @@ variable "tags" {
 variable "virtual_network_address_space" {
   type        = list(string)
   description = "A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet."
+  default     = []
 }

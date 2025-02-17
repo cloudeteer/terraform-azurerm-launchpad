@@ -1,5 +1,14 @@
+locals {
+  user_assigned_identity_name = coalesce(
+    var.name_overrides.user_assigned_identity,
+    join("-", compact([
+      "id", var.name, "prd", local.location_short[var.location], var.name_suffix
+    ]))
+  )
+}
+
 resource "azurerm_user_assigned_identity" "this" {
-  name                = join("-", compact(["id", var.name, "prd", local.location_short[var.location], var.name_suffix]))
+  name                = local.user_assigned_identity_name
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
@@ -35,16 +44,18 @@ resource "azurerm_role_assignment" "subscription_owner" {
 }
 
 resource "azurerm_role_assignment" "resource_specific" {
-  for_each = {
-    storage_blob_owner = {
-      role_definition_name = "Storage Blob Data Owner"
-      scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
-    },
-    key_vault_admin = {
-      role_definition_name = "Key Vault Administrator"
-      scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
-    }
-  }
+  for_each = var.create_role_assignments ? {
+    for key, value in {
+      storage_blob_owner = {
+        role_definition_name = "Storage Blob Data Owner"
+        scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
+      },
+      key_vault_admin = var.create_key_vault ? {
+        role_definition_name = "Key Vault Administrator"
+        scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
+      } : null
+  } : key => value if value != null } : {}
+
 
   principal_id         = azurerm_user_assigned_identity.this.principal_id
   scope                = each.value.scope

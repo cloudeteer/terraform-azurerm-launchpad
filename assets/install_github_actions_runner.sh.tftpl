@@ -27,6 +27,9 @@ apt-get update -yqq
 apt-get install -yqq curl jq unzip python3 python3-pip
 ln -s /usr/bin/python3 /usr/bin/python
 
+# Install Azure CLI
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
 RUNNER_NAME=$(hostname)
 
 # Fill variables with Terraform templatefile()
@@ -66,6 +69,10 @@ id "$RUNNER_USER" &>/dev/null || useradd --create-home --system \
   --home "/home/$RUNNER_USER" \
   --shell /usr/sbin/nologin \
   "$RUNNER_USER"
+
+# Add GitHub SSH host keys to known hosts
+sudo -u "$RUNNER_USER" -- mkdir -p /home/$RUNNER_USER/.ssh
+sudo -u "$RUNNER_USER" -- ssh-keyscan -t rsa github.com | sudo -u "$RUNNER_USER" -- tee -a "/home/$RUNNER_USER/.ssh/known_hosts"
 
 # Create base install directory
 mkdir -p /opt/actions-runner

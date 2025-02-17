@@ -1,4 +1,22 @@
+locals {
+  key_vault_name = coalesce(
+    var.name_overrides.key_vault,
+    join("", compact([
+      "kv", var.name, "prd", local.location_short[var.location], one(random_string.kvlaunchpadprd_suffix[*].result)
+    ]))
+  )
+
+  key_vault_private_endpoint_name = coalesce(
+    var.name_overrides.key_vault_private_endpoint,
+    join("-", compact([
+      "pe", one(azurerm_key_vault.this[*].name), "prd", local.location_short[var.location], var.name_suffix
+    ]))
+  )
+}
+
 resource "random_string" "kvlaunchpadprd_suffix" {
+  count = var.create_key_vault && var.name_overrides.key_vault == null ? 1 : 0
+
   length  = 3
   special = false
   upper   = false
@@ -8,8 +26,19 @@ locals {
   key_vault_private_link_enabled = length((var.key_vault_virtual_network_subnet_ids)) > 0
 }
 
+resource "azurerm_management_lock" "key_vault_lock" {
+  count = var.init || !var.key_vault_deletion_lock || !var.create_key_vault ? 0 : 1
+
+  name       = "key_vault_lock"
+  scope      = azurerm_key_vault.this[0].id
+  lock_level = "CanNotDelete"
+  notes      = "This lock prevents the deletion of the Key Vault, which contains critical infrastructure information."
+}
+
 resource "azurerm_key_vault" "this" {
-  name                = join("", compact(["kv", var.name, "prd", local.location_short[var.location], random_string.kvlaunchpadprd_suffix.result]))
+  count = var.create_key_vault ? 1 : 0
+
+  name                = local.key_vault_name
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
@@ -31,16 +60,18 @@ resource "azurerm_key_vault" "this" {
 }
 
 resource "azurerm_private_endpoint" "key_vault" {
-  name                = join("-", compact(["pe", azurerm_key_vault.this.name, "prd", local.location_short[var.location], var.name_suffix]))
+  count = var.create_key_vault ? 1 : 0
+
+  name                = local.key_vault_private_endpoint_name
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
 
-  subnet_id = azurerm_subnet.this.id
+  subnet_id = local.subnet_id
 
   private_service_connection {
     name                           = "vault"
-    private_connection_resource_id = azurerm_key_vault.this.id
+    private_connection_resource_id = azurerm_key_vault.this[0].id
     subresource_names              = ["vault"]
     is_manual_connection           = false
   }
@@ -55,10 +86,10 @@ resource "azurerm_private_endpoint" "key_vault" {
 }
 
 resource "azurerm_role_assignment" "key_vault_admin_current_user" {
-  count = var.init ? 1 : 0
+  count = var.create_key_vault && var.init ? 1 : 0
 
   description          = "Temporary role assignment. Delete this assignment if unsure why it is still existing."
   principal_id         = local.init_access_azure_principal_id
   role_definition_name = "Key Vault Administrator"
-  scope                = azurerm_key_vault.this.id
+  scope                = azurerm_key_vault.this[0].id
 }
