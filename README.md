@@ -203,6 +203,14 @@ Type: `list(string)`
 
 Default: `[]`
 
+### <a name="input_location_short"></a> [location\_short](#input\_location\_short)
+
+Description: Map of location short codes to merge with the existing defaults
+
+Type: `map(string)`
+
+Default: `{}`
+
 ### <a name="input_management_group_names"></a> [management\_group\_names](#input\_management\_group\_names)
 
 Description: A list of management group in order the Launchpad gets Owner-permission in these management-groups.
