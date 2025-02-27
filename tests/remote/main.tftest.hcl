@@ -37,6 +37,9 @@ run "deploy_module" {
     runner_github_pat   = ""
     runner_github_repo  = "cloudeteer/terraform-azurerm-launchpad"
 
+    # Make the storage_account deletable
+    storage_account_deletion_lock = false
+
     # Initial deployment
     init                   = true
     init_access_ip_address = run.setup_tests.init_access_ip_address

@@ -25,7 +25,7 @@ resource "random_string" "stlaunchpadprd_suffix" {
 }
 
 resource "azurerm_management_lock" "storage_account_lock" {
-  count      = var.init || !var.storage_account_deletion_lock ? 0 : 1
+  count      = var.storage_account_deletion_lock ? 1 : 0
   name       = "storage_account_lock"
   scope      = azurerm_storage_account.this.id
   lock_level = "CanNotDelete"
