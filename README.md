@@ -260,6 +260,14 @@ Type: `string`
 
 Default: `null`
 
+### <a name="input_role_definition_name"></a> [role\_definition\_name](#input\_role\_definition\_name)
+
+Description: Specifies the role definition name to be assigned to the Launchpad. Allowed values: `Contributor` and `Owner`.
+
+Type: `string`
+
+Default: `"Owner"`
+
 ### <a name="input_runner_arch"></a> [runner\_arch](#input\_runner\_arch)
 
 Description: The CPU architecture to run the GitHub actions runner. Can be `x64` or `arm64`.
