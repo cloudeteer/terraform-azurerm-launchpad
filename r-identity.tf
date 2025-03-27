@@ -31,7 +31,7 @@ resource "azurerm_role_assignment" "management_group_owner" {
   for_each = data.azurerm_management_group.managed_by_launchpad
 
   principal_id         = azurerm_user_assigned_identity.this.principal_id
-  role_definition_name = "Owner"
+  role_definition_name = var.role_definition_name
   scope                = each.value.id
 }
 
@@ -39,7 +39,7 @@ resource "azurerm_role_assignment" "subscription_owner" {
   for_each = data.azurerm_subscription.managed_by_launchpad
 
   principal_id         = azurerm_user_assigned_identity.this.principal_id
-  role_definition_name = "Owner"
+  role_definition_name = var.role_definition_name
   scope                = each.value.id
 }
 
