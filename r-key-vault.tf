@@ -33,6 +33,10 @@ resource "azurerm_management_lock" "key_vault_lock" {
   scope      = azurerm_key_vault.this[0].id
   lock_level = "CanNotDelete"
   notes      = "This lock prevents the deletion of the Key Vault, which contains critical infrastructure information."
+
+  depends_on = [
+    azurerm_role_assignment.key_vault_admin_current_user,
+  ]
 }
 
 resource "azurerm_key_vault" "this" {
