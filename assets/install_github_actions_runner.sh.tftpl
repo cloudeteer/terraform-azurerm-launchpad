@@ -30,6 +30,9 @@ ln -s /usr/bin/python3 /usr/bin/python
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
+# Install Azure AKS CLI (kubelogin)
+sudo az aks install-cli
+
 RUNNER_NAME=$(hostname)
 
 # Fill variables with Terraform templatefile()
