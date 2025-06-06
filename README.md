@@ -19,6 +19,10 @@ The IaC Launchpad is a collection of essential Azure resources required for mana
 
 [![Launchpad Design](https://raw.githubusercontent.com/cloudeteer/terraform-azurerm-launchpad/refs/heads/main/images/diagram.svg)](https://github.com/cloudeteer/terraform-azurerm-launchpad/blob/main/images/diagram.png)
 
+## Tools
+
+For a comprehensive list of tools available on the Launchpad runner, see [TOOLS.md](TOOLS.md).
+
 <!-- BEGIN_TF_DOCS -->
 ## Usage
 
