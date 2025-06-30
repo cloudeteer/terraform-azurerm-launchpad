@@ -30,6 +30,10 @@ resource "azurerm_management_lock" "storage_account_lock" {
   scope      = azurerm_storage_account.this.id
   lock_level = "CanNotDelete"
   notes      = "This lock prevents the deletion of the Storage Account, which contains critical infrastructure information."
+
+  depends_on = [
+    azurerm_role_assignment.storage_account_blob_owner_current_user,
+  ]
 }
 
 resource "azurerm_storage_account" "this" {

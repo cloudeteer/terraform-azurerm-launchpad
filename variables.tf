@@ -166,6 +166,17 @@ variable "resource_group_name" {
   type        = string
 }
 
+variable "role_definition_name" {
+  type        = string
+  description = "Specifies the role definition name to be assigned to the Launchpad. Allowed values: `Contributor` and `Owner`."
+  default     = "Owner"
+
+  validation {
+    condition     = contains(["Contributor", "Owner"], var.role_definition_name)
+    error_message = "Invalid role definition name. Allowed values are 'Contributor' and 'Owner'."
+  }
+}
+
 variable "runner_arch" {
   type        = string
   default     = "arm64"

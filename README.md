@@ -7,14 +7,21 @@
 
 # terraform-azurerm-launchpad
 
-[![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue.svg)](https://github.com/cloudeteer/terraform-azurerm-launchpad/releases)
+[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-launchpad-7B42BC?style=for-the-badge&logo=terraform&logoColor=A067DA)](https://registry.terraform.io/modules/cloudeteer/launchpad/azurerm)
+[![OpenTofu Registry](https://img.shields.io/badge/OpenTofu%20Registry-launchpad-4B4B77?style=for-the-badge&logo=opentofu)](https://search.opentofu.org/module/cloudeteer/launchpad/azurerm)
+[![SemVer](https://img.shields.io/badge/SemVer-2.0.0-F77F00?style=for-the-badge)](https://github.com/cloudeteer/terraform-azurerm-launchpad/releases)
 
 This module provisions all essential infrastructure components within an Azure tenant to enable secure, automated management using Terraform and GitHub. It sets up a GitHub private runner, a Terraform state storage account, and other key resources necessary for fully automated Terraform deployments. The module is designed to adhere to security best practices throughout the process.
+
 ## Design
 
 The IaC Launchpad is a collection of essential Azure resources required for managing Terraform deployments via Cloudeteer GitHub Actions. The term “Launchpad” draws an analogy to rocket science, emphasizing the foundational role it plays.
 
-[![Launchpad Design](images/diagram.svg)](images/diagram.png)
+[![Launchpad Design](https://raw.githubusercontent.com/cloudeteer/terraform-azurerm-launchpad/refs/heads/main/images/diagram.svg)](https://github.com/cloudeteer/terraform-azurerm-launchpad/blob/main/images/diagram.png)
+
+## Tools
+
+For a comprehensive list of tools available on the Launchpad runner, see [TOOLS.md](TOOLS.md).
 
 <!-- BEGIN_TF_DOCS -->
 ## Usage
@@ -285,6 +292,14 @@ Description: An optional suffix appended to the base name for all resources crea
 Type: `string`
 
 Default: `null`
+
+### <a name="input_role_definition_name"></a> [role\_definition\_name](#input\_role\_definition\_name)
+
+Description: Specifies the role definition name to be assigned to the Launchpad. Allowed values: `Contributor` and `Owner`.
+
+Type: `string`
+
+Default: `"Owner"`
 
 ### <a name="input_runner_arch"></a> [runner\_arch](#input\_runner\_arch)
 
