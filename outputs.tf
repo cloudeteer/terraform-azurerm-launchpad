@@ -36,6 +36,11 @@ output "principal_id" {
   description = "The principal ID of the Azure user identity assigned to the Launchpad."
 }
 
+output "storage_account_id" {
+  value       = azurerm_storage_account.this.id
+  description = "The resource ID of the Azure Storage Account used by the Launchpad for storing Terraform remote state files."
+}
+
 output "subnet_id" {
   value       = local.subnet_id
   description = "The ID of the subnet within the Virtual Network associated with the Launchpad. If `var.subnet_id` is specified, its value is used for this output. Otherwise, the ID of the subnet created by this module is returned."
