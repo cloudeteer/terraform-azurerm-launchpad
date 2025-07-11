@@ -43,6 +43,11 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     storage_account_uri = null
   }
 
+  scale_in {
+    force_deletion_enabled = false
+    rule                   = "OldestVM"
+  }
+
   extension_operations_enabled = true
   extensions_time_budget       = "PT15M"
   provision_vm_agent           = true
