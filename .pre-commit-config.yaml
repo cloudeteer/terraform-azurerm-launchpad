@@ -10,19 +10,27 @@ repos:
     hooks:
       - id: terraform-docs-system
         args: ["."]
+  - repo: local
+    hooks:
+      - id: tfsort
+        name: Sort Terraform variables
+        language: system
+        types: [terraform]
+        entry: bash -c 'for f in $@; do tfsort "$f"; done' --
+        files: ^variables|outputs\.tf$
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: "v1.99.0"
     hooks:
       - id: terraform_fmt
       - id: terraform_tflint
-        exclude: ^(examples|tests)/
+        exclude: (examples|tests)/
         args:
           - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
           - --hook-config=--delegate-chdir
       - id: terraform_tflint
         alias: terraform_tflint_examples
         name: Terraform validate examples with tflint
-        files: ^examples/
+        files: examples/
         args:
           - --args=--config=__GIT_WORKING_DIR__/.tflint.examples.hcl
           - --hook-config=--delegate-chdir
@@ -30,13 +38,13 @@ repos:
       - id: terraform_tflint
         alias: terraform_tflint_tests
         name: Terraform validate tests with tflint
-        files: ^tests/
+        files: tests/
         args:
           - --args=--config=__GIT_WORKING_DIR__/.tflint.tests.hcl
           - --hook-config=--delegate-chdir
 
       - id: terraform_trivy
-        exclude: ^(examples|tests)/
+        exclude: (examples|tests)/
         args:
           - --args=--skip-dirs="examples/"
           - --args=--skip-dirs="tests/"
