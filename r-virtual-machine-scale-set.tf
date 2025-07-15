@@ -42,6 +42,8 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   vtpm_enabled                    = false
   overprovision                   = false
 
+  custom_data = base64encode("#cloud-config\n#${sha256(local.github_runner_script)}")
+
   automatic_instance_repair {
     enabled      = true
     grace_period = "PT10M"
