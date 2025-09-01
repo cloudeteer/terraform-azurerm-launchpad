@@ -14,6 +14,8 @@ locals {
       "pe", azurerm_storage_account.this.name, "prd", local.location_short[var.location], var.name_suffix
     ]))
   )
+
+  resource_group_id = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
 }
 
 resource "random_string" "stlaunchpadprd_suffix" {
@@ -103,5 +105,5 @@ resource "azurerm_role_assignment" "storage_account_blob_owner_current_user" {
   description          = "Temporary role assignment. Delete this assignment if unsure why it is still existing."
   principal_id         = local.init_access_azure_principal_id
   role_definition_name = "Storage Blob Data Owner"
-  scope                = azurerm_storage_account.this.id
+  scope                = local.resource_group_id
 }
