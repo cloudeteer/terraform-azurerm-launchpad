@@ -1,9 +1,9 @@
 variable "location" {
-  type        = string
+  type = string
 }
 
 variable "resource_group_name" {
-  type        = string
+  type = string
 }
 
 resource "random_string" "resource_group_suffix" {
@@ -18,11 +18,11 @@ resource "azurerm_resource_group" "tftest" {
 }
 
 output "resource_group_name" {
-  value       = azurerm_resource_group.tftest.name
+  value = azurerm_resource_group.tftest.name
 }
 
 output "resource_group_location" {
-  value       = azurerm_resource_group.tftest.location
+  value = azurerm_resource_group.tftest.location
 }
 
 data "http" "init_access_ip_address" {
@@ -30,5 +30,5 @@ data "http" "init_access_ip_address" {
 }
 
 output "init_access_ip_address" {
-  value       = trimspace(data.http.init_access_ip_address.response_body)
+  value = trimspace(data.http.init_access_ip_address.response_body)
 }
