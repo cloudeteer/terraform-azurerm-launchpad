@@ -95,5 +95,5 @@ resource "azurerm_role_assignment" "key_vault_admin_current_user" {
   description          = "Temporary role assignment. Delete this assignment if unsure why it is still existing."
   principal_id         = local.init_access_azure_principal_id
   role_definition_name = "Key Vault Administrator"
-  scope                = azurerm_key_vault.this[0].id
+  scope                = split("/providers/", azurerm_key_vault.this[0].id)[0] # resource group id
 }

@@ -103,5 +103,5 @@ resource "azurerm_role_assignment" "storage_account_blob_owner_current_user" {
   description          = "Temporary role assignment. Delete this assignment if unsure why it is still existing."
   principal_id         = local.init_access_azure_principal_id
   role_definition_name = "Storage Blob Data Owner"
-  scope                = azurerm_storage_account.this.id
+  scope                = split("/providers/", azurerm_storage_account.this.id)[0] # resource group id
 }
