@@ -18,6 +18,14 @@ plugin "azurerm" {
   version = "0.28.0"
 }
 
+rule "terraform_documented_variables" {
+  enabled = false
+}
+
+rule "terraform_documented_outputs" {
+  enabled = false
+}
+
 rule "terraform_unused_required_providers" {
   enabled = false
 }

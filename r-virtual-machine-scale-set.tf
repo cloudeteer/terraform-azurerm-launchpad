@@ -26,18 +26,23 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   resource_group_name = var.resource_group_name
   tags                = var.tags
 
-  admin_password                  = random_password.virtual_machine_scale_set_admin_password.result
-  admin_username                  = local.admin_username
-  computer_name_prefix            = "vm-${var.name}"
+  computer_name_prefix = "vm-${var.name}"
+  admin_password       = random_password.virtual_machine_scale_set_admin_password.result
+  admin_username       = local.admin_username
+  upgrade_mode         = var.upgrade_mode
+  instances            = var.runner_vm_instances
+
   disable_password_authentication = false
-  instances                       = var.runner_vm_instances
   sku                             = "Standard_D2plds_v5"
   encryption_at_host_enabled      = false
+  extension_operations_enabled    = true
+  extensions_time_budget          = "PT15M"
+  provision_vm_agent              = true
+  secure_boot_enabled             = false
+  vtpm_enabled                    = false
+  overprovision                   = false
 
-  automatic_os_upgrade_policy {
-    disable_automatic_rollback  = false
-    enable_automatic_os_upgrade = false
-  }
+  custom_data = base64encode("#cloud-config\n#${sha256(local.github_runner_script)}")
 
   automatic_instance_repair {
     enabled      = true
@@ -46,61 +51,6 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
 
   boot_diagnostics {
     storage_account_uri = null
-  }
-
-  rolling_upgrade_policy {
-    max_batch_instance_percent              = 100
-    max_unhealthy_instance_percent          = 100
-    max_unhealthy_upgraded_instance_percent = 100
-    pause_time_between_batches              = "PT0M"
-  }
-
-  extension_operations_enabled = true
-  extensions_time_budget       = "PT15M"
-  provision_vm_agent           = true
-  upgrade_mode                 = "Automatic"
-  secure_boot_enabled          = false
-  vtpm_enabled                 = false
-  overprovision                = false
-
-  # trigger instance update
-  custom_data = base64encode("#cloud-config\n#${sha256(local.github_runner_script)}")
-
-  # https://documentation.ubuntu.com/azure/en/latest/azure-how-to/instances/find-ubuntu-images/
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "ubuntu-24_04-lts"
-    sku       = "server-arm64"
-    version   = "latest"
-  }
-
-  os_disk {
-    storage_account_type = "Standard_LRS"
-    caching              = "ReadOnly"
-    disk_size_gb         = 49
-
-    diff_disk_settings {
-      option    = "Local"
-      placement = "CacheDisk"
-    }
-  }
-
-  network_interface {
-    name    = "primary"
-    primary = true
-
-    ip_configuration {
-      name      = "internal"
-      primary   = true
-      subnet_id = local.subnet_id
-
-      dynamic "public_ip_address" {
-        for_each = var.runner_public_ip_address ? [true] : []
-        content {
-          name = "public"
-        }
-      }
-    }
   }
 
   extension {
@@ -129,6 +79,66 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
       protocol = "tcp"
       port     = 22
     })
+  }
+
+  network_interface {
+    name    = "primary"
+    primary = true
+
+    ip_configuration {
+      name      = "internal"
+      primary   = true
+      subnet_id = local.subnet_id
+
+      dynamic "public_ip_address" {
+        for_each = var.runner_public_ip_address ? [true] : []
+        content {
+          name = "public"
+        }
+      }
+    }
+  }
+
+  os_disk {
+    storage_account_type = "Standard_LRS"
+    caching              = "ReadOnly"
+    disk_size_gb         = 49
+
+    diff_disk_settings {
+      option    = "Local"
+      placement = "CacheDisk"
+    }
+  }
+
+  scale_in {
+    force_deletion_enabled = false
+    rule                   = "OldestVM"
+  }
+
+  # https://documentation.ubuntu.com/azure/en/latest/azure-how-to/instances/find-ubuntu-images/
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "ubuntu-24_04-lts"
+    sku       = "server-arm64"
+    version   = "latest"
+  }
+
+  dynamic "automatic_os_upgrade_policy" {
+    for_each = var.automatic_os_upgrade_policy != null ? [true] : []
+    content {
+      disable_automatic_rollback  = var.automatic_os_upgrade_policy.disable_automatic_rollback
+      enable_automatic_os_upgrade = var.automatic_os_upgrade_policy.enable_automatic_os_upgrade
+    }
+  }
+
+  dynamic "rolling_upgrade_policy" {
+    for_each = var.rolling_upgrade_policy != null ? [true] : []
+    content {
+      max_batch_instance_percent              = var.rolling_upgrade_policy.max_batch_instance_percent
+      max_unhealthy_instance_percent          = var.rolling_upgrade_policy.max_unhealthy_instance_percent
+      max_unhealthy_upgraded_instance_percent = var.rolling_upgrade_policy.max_unhealthy_upgraded_instance_percent
+      pause_time_between_batches              = var.rolling_upgrade_policy.pause_time_between_batches
+    }
   }
 }
 

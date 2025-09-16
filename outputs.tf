@@ -46,6 +46,11 @@ output "subnet_name" {
   description = "The name of the subnet within the Virtual Network associated with the Launchpad. If `var.subnet_id` is not specified, the name of the subnet created by this module is returned. Otherwise, the name is extracted from the specified `var.subnet_id`."
 }
 
+output "virtual_machine_scale_set_name" {
+  value       = azurerm_linux_virtual_machine_scale_set.this.name
+  description = "The name of the Azure Linux Virtual Machine Scale Set resource"
+}
+
 output "virtual_network_id" {
   value = (var.subnet_id == null ? azurerm_virtual_network.this[0].id :
   join("/", slice(split("/", var.subnet_id), 0, 9)))

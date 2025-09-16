@@ -131,6 +131,28 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
+### <a name="input_automatic_os_upgrade_policy"></a> [automatic\_os\_upgrade\_policy](#input\_automatic\_os\_upgrade\_policy)
+
+Description:     This can only be specified when `upgrade_mode` is set to either `Automatic` or `Rolling`.
+
+    Required arguments:
+
+    Argument | Description
+    -- | --
+    `disable_automatic_rollback` | Should automatic rollbacks be disabled?
+    `enable_automatic_os_upgrade` | Should OS Upgrades automatically be applied to Scale Set instances in a rolling fashion when a newer version of the OS Image becomes available?
+
+Type:
+
+```hcl
+object({
+    disable_automatic_rollback  = bool
+    enable_automatic_os_upgrade = bool
+  })
+```
+
+Default: `null`
+
 ### <a name="input_create_key_vault"></a> [create\_key\_vault](#input\_create\_key\_vault)
 
 Description: Create a central Key Vault which can be used to store secrets and keys securely during workload deployments.
@@ -275,6 +297,44 @@ Type: `string`
 
 Default: `"Owner"`
 
+### <a name="input_rolling_upgrade_policy"></a> [rolling\_upgrade\_policy](#input\_rolling\_upgrade\_policy)
+
+Description: Provides advanced configuration for the rolling upgrade policy. This block is *required* and can only be specified when `upgrade_mode` is set to `Automatic` or `Rolling`.
+
+Required arguments:
+
+Argument | Description
+-- | --
+`max_batch_instance_percent` | The maximum percent of total virtual machine instances that will be upgraded simultaneously by the rolling upgrade in one batch. As this is a maximum, unhealthy instances in previous or future batches can cause the percentage of instances in a batch to decrease to ensure higher reliability.
+`max_unhealthy_instance_percent` | The maximum percentage of the total virtual machine instances in the scale set that can be simultaneously unhealthy, either as a result of being upgraded, or by being found in an unhealthy state by the virtual machine health checks before the rolling upgrade aborts. This constraint will be checked prior to starting any batch.
+`max_unhealthy_upgraded_instance_percent` | The maximum percentage of upgraded virtual machine instances that can be found to be in an unhealthy state. This check will happen after each batch is upgraded. If this percentage is ever exceeded, the rolling update aborts.
+`pause_time_between_batches` | The wait time between completing the update for all virtual machines in one batch and starting the next batch. The time duration should be specified in [ISO 8601 duration format](https://docs.digi.com/resources/documentation/digidocs/90001488-13/reference/r_iso_8601_duration_format.htm) (e.g. `PT10M` to `PT90M`).
+
+Optional Arguments:
+
+Argument | Description
+-- | --
+`cross_zone_upgrades_enabled` | Should the Virtual Machine Scale Set ignore the Azure Zone boundaries when constructing upgrade batches? Possible values are true or false.
+`prioritize_unhealthy_instances_enabled` | Upgrade all unhealthy instances in a scale set before any healthy instances. Possible values are true or false.
+`maximum_surge_instances_enabled` | Create new virtual machines to upgrade the scale set, rather than updating the existing virtual machines. Existing virtual machines will be deleted once the new virtual machines are created for each batch. Possible values are true or false.
+
+Type:
+
+```hcl
+object({
+    max_batch_instance_percent              = string
+    max_unhealthy_instance_percent          = string
+    max_unhealthy_upgraded_instance_percent = string
+    pause_time_between_batches              = string
+
+    cross_zone_upgrades_enabled            = optional(bool)
+    maximum_surge_instances_enabled        = optional(bool)
+    prioritize_unhealthy_instances_enabled = optional(bool)
+  })
+```
+
+Default: `null`
+
 ### <a name="input_runner_arch"></a> [runner\_arch](#input\_runner\_arch)
 
 Description: The CPU architecture to run the GitHub actions runner. Can be `x64` or `arm64`.
@@ -395,6 +455,16 @@ Type: `map(string)`
 
 Default: `{}`
 
+### <a name="input_upgrade_mode"></a> [upgrade\_mode](#input\_upgrade\_mode)
+
+Description:     Specifies how Upgrades (e.g. changing the Image/SKU) should be performed to Virtual Machine Instances. Possible values are `Automatic`, `Manual` and `Rolling`.
+
+    **Note**: If rolling upgrades are configured and running on a Linux Virtual Machine Scale Set, they will be cancelled when Terraform tries to destroy the resource.
+
+Type: `string`
+
+Default: `"Manual"`
+
 ### <a name="input_virtual_network_address_space"></a> [virtual\_network\_address\_space](#input\_virtual\_network\_address\_space)
 
 Description: A list of IP address ranges to be assigned to the virtual network (VNet). Each entry in the list represents a CIDR block used to define the address space of the VNet.
@@ -442,6 +512,10 @@ Description: The ID of the subnet within the Virtual Network associated with the
 ### <a name="output_subnet_name"></a> [subnet\_name](#output\_subnet\_name)
 
 Description: The name of the subnet within the Virtual Network associated with the Launchpad. If `var.subnet_id` is not specified, the name of the subnet created by this module is returned. Otherwise, the name is extracted from the specified `var.subnet_id`.
+
+### <a name="output_virtual_machine_scale_set_name"></a> [virtual\_machine\_scale\_set\_name](#output\_virtual\_machine\_scale\_set\_name)
+
+Description: The name of the Azure Linux Virtual Machine Scale Set resource
 
 ### <a name="output_virtual_network_id"></a> [virtual\_network\_id](#output\_virtual\_network\_id)
 
