@@ -30,9 +30,9 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   admin_username                  = local.admin_username
   computer_name_prefix            = "vm-${var.name}"
   disable_password_authentication = false
+  encryption_at_host_enabled      = var.encryption_at_host_enabled
   instances                       = var.runner_vm_instances
   sku                             = "Standard_D2plds_v5"
-  encryption_at_host_enabled      = false
 
   automatic_os_upgrade_policy {
     disable_automatic_rollback  = false

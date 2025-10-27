@@ -214,6 +214,18 @@ variable "runner_public_ip_address" {
   description = "Set the value of this variable to `true` if you want to allocate a public IP address to each instance within the Virtual Machine Scale Set. Enabling this option may be necessary to establish internet access when a direct connection to a HUB is currently unavailable."
 }
 
+variable "encryption_at_host_enabled" {
+  type        = bool
+  default     = true
+  description = <<-EOT
+    Toggle host-based encryption for the Virtual Machine Scale Set. Set to `true` to encrypt data end-to-end between the VM and the storage service.
+
+    **NOTE**: Requires the provider feature `Microsoft.Compute/EncryptionAtHost` to be enabled at the subscription level.
+
+    Refer to the [Azure host-based encryption guidance](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-enable-host-based-encryption-portal?tabs=azure-powershell) for further requirements and limitations.
+  EOT
+}
+
 variable "runner_user" {
   type        = string
   default     = "actions-runner"
