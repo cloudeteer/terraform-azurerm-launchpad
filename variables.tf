@@ -218,7 +218,11 @@ variable "encryption_at_host_enabled" {
   type        = bool
   default     = true
   description = <<-EOT
-    Toggle host-based encryption for the Virtual Machine Scale Set. Set to `true` to encrypt data end-to-end between the VM and the storage service. Refer to the [Azure host-based encryption guidance](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-enable-host-based-encryption-portal?tabs=azure-powershell) for requirements and limitations.
+    Toggle host-based encryption for the Virtual Machine Scale Set. Set to `true` to encrypt data end-to-end between the VM and the storage service.
+
+    **NOTE**: Requires the provider feature `Microsoft.Compute/EncryptionAtHost` to be enabled at the subscription level.
+
+    Refer to the [Azure host-based encryption guidance](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-enable-host-based-encryption-portal?tabs=azure-powershell) for further requirements and limitations.
   EOT
 }
 
