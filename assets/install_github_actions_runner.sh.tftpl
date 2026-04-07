@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -eu
+trap 'echo "ERROR: command failed at line $LINENO: $BASH_COMMAND" >&2' ERR
 
 # do no rerun on exists VM
 # shellcheck disable=SC2154
@@ -63,7 +64,7 @@ id "$RUNNER_USER" &>/dev/null || useradd --create-home --system \
   --shell /usr/sbin/nologin \
   "$RUNNER_USER"
 
-# Persist runner credentials/config across VM reimages by mounting Azure Files to /opt/actions-runner
+# Persist only runner identity/config files across VM reimages by mounting Azure Files to a state path.
 # shellcheck disable=SC2154
 RUNNER_SA_HOST=${runner_storage_account_hostname}
 # shellcheck disable=SC2154
@@ -72,6 +73,8 @@ RUNNER_SA_NAME=${runner_storage_account_name}
 RUNNER_SA_KEY=${runner_storage_account_key}
 # shellcheck disable=SC2154
 RUNNER_SHARE=${runner_storage_share_name}
+RUNNER_LOCAL_BASE=/opt/actions-runner
+RUNNER_STATE_BASE=/mnt/actions-runner-state
 
 mkdir -p /etc/smbcredentials
 cat >/etc/smbcredentials/"$RUNNER_SA_NAME".cred <<EOF
@@ -80,18 +83,18 @@ password=$RUNNER_SA_KEY
 EOF
 chmod 600 /etc/smbcredentials/"$RUNNER_SA_NAME".cred
 
-mkdir -p /opt/actions-runner
+mkdir -p "$RUNNER_LOCAL_BASE" "$RUNNER_STATE_BASE"
 RUNNER_UID=$(id -u "$RUNNER_USER")
 RUNNER_GID=$(id -g "$RUNNER_USER")
 
 # Azure Files over SMB does not preserve Unix perms; ensure executables remain runnable.
 CIFS_OPTS="credentials=/etc/smbcredentials/$RUNNER_SA_NAME.cred,vers=3.0,serverino,nofail,_netdev,dir_mode=0775,file_mode=0775,uid=$RUNNER_UID,gid=$RUNNER_GID,mfsymlinks"
 
-if mountpoint -q /opt/actions-runner; then
-  mount -t cifs -o "remount,$CIFS_OPTS" "//$RUNNER_SA_HOST/$RUNNER_SHARE" /opt/actions-runner
+if mountpoint -q "$RUNNER_STATE_BASE"; then
+  mount -t cifs -o "remount,$CIFS_OPTS" "//$RUNNER_SA_HOST/$RUNNER_SHARE" "$RUNNER_STATE_BASE"
 else
   for retry in $(seq 1 12); do
-    if mount -t cifs "//$RUNNER_SA_HOST/$RUNNER_SHARE" /opt/actions-runner -o "$CIFS_OPTS"; then
+    if mount -t cifs "//$RUNNER_SA_HOST/$RUNNER_SHARE" "$RUNNER_STATE_BASE" -o "$CIFS_OPTS"; then
       break
     fi
     if [ "$retry" -eq 12 ]; then
@@ -102,7 +105,70 @@ else
   done
 fi
 
-grep -q " /opt/actions-runner " /etc/fstab || echo "//$RUNNER_SA_HOST/$RUNNER_SHARE /opt/actions-runner cifs credentials=/etc/smbcredentials/$RUNNER_SA_NAME.cred,vers=3.0,serverino,nofail,_netdev,dir_mode=0775,file_mode=0775,uid=$(id -u "$RUNNER_USER"),gid=$(id -g "$RUNNER_USER"),mfsymlinks 0 0" >>/etc/fstab
+grep -q " $RUNNER_STATE_BASE " /etc/fstab || echo "//$RUNNER_SA_HOST/$RUNNER_SHARE $RUNNER_STATE_BASE cifs credentials=/etc/smbcredentials/$RUNNER_SA_NAME.cred,vers=3.0,serverino,nofail,_netdev,dir_mode=0775,file_mode=0775,uid=$(id -u "$RUNNER_USER"),gid=$(id -g "$RUNNER_USER"),mfsymlinks 0 0" >>/etc/fstab
+
+restore_runner_state() {
+  local state_dir=$1
+  local local_dir=$2
+
+  if [ -f "$state_dir/.runner" ]; then
+    cp -f "$state_dir/.runner" "$local_dir/.runner"
+  fi
+  if [ -f "$state_dir/.credentials" ]; then
+    cp -f "$state_dir/.credentials" "$local_dir/.credentials"
+  fi
+  if [ -f "$state_dir/.credentials_rsaparams" ]; then
+    cp -f "$state_dir/.credentials_rsaparams" "$local_dir/.credentials_rsaparams"
+  fi
+  if [ -f "$state_dir/.service" ]; then
+    cp -f "$state_dir/.service" "$local_dir/.service"
+  fi
+
+  if [ -d "$state_dir/_diag" ]; then
+    mkdir -p "$local_dir/_diag"
+    cp -a "$state_dir/_diag/." "$local_dir/_diag/" || true
+  fi
+
+  chown -R "$RUNNER_USER:$RUNNER_USER" "$local_dir"
+  if [ -f "$local_dir/.runner" ]; then
+    chmod 600 "$local_dir/.runner"
+  fi
+  if [ -f "$local_dir/.credentials" ]; then
+    chmod 600 "$local_dir/.credentials"
+  fi
+  if [ -f "$local_dir/.credentials_rsaparams" ]; then
+    chmod 600 "$local_dir/.credentials_rsaparams"
+  fi
+  if [ -f "$local_dir/.service" ]; then
+    chmod 600 "$local_dir/.service"
+  fi
+}
+
+persist_runner_state() {
+  local local_dir=$1
+  local state_dir=$2
+
+  mkdir -p "$state_dir"
+  if [ -f "$local_dir/.runner" ]; then
+    install -m 600 "$local_dir/.runner" "$state_dir/.runner"
+  fi
+  if [ -f "$local_dir/.credentials" ]; then
+    install -m 600 "$local_dir/.credentials" "$state_dir/.credentials"
+  fi
+  if [ -f "$local_dir/.credentials_rsaparams" ]; then
+    install -m 600 "$local_dir/.credentials_rsaparams" "$state_dir/.credentials_rsaparams"
+  fi
+  if [ -f "$local_dir/.service" ]; then
+    install -m 600 "$local_dir/.service" "$state_dir/.service"
+  fi
+
+  if [ -d "$local_dir/_diag" ]; then
+    mkdir -p "$state_dir/_diag"
+    cp -a "$local_dir/_diag/." "$state_dir/_diag/" || true
+  fi
+
+  # Azure Files (CIFS) may reject chown/chgrp operations; uid/gid are controlled by mount options.
+}
 
 # Get the latest version
 if [ "$RUNNER_VERSION" = "latest" ]; then
@@ -117,23 +183,26 @@ fi
 sudo -u "$RUNNER_USER" -- mkdir -p /home/$RUNNER_USER/.ssh
 sudo -u "$RUNNER_USER" -- ssh-keyscan -t rsa github.com | sudo -u "$RUNNER_USER" -- tee -a "/home/$RUNNER_USER/.ssh/known_hosts"
 
-cd /opt/actions-runner
+cd "$RUNNER_LOCAL_BASE"
 
 # Download the latest runner package
 curl -sS --fail -L -o "actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz" \
   "https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz"
 
 for i in $(seq 1 "$RUNNER_COUNT"); do
-  current_dir=$PWD
+  local_dir="$RUNNER_LOCAL_BASE/$i"
+  state_dir="$RUNNER_STATE_BASE/$i"
 
-  mkdir -p "$i"
-  mkdir -p "/tmp/$i"
-  chown -R "$RUNNER_USER" "/tmp/$i"
-  chown -R "$RUNNER_USER" "$i"
-  cd "$i"
+  mkdir -p "$local_dir" "/tmp/$i"
+  chown -R "$RUNNER_USER:$RUNNER_USER" "/tmp/$i" "$local_dir"
+  cd "$local_dir"
 
-  # Extract the installer
-  sudo -u "$RUNNER_USER" -- tar xzf "../actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz"
+  # Extract locally to keep runner binaries and execution off SMB.
+  if [ ! -f "./config.sh" ]; then
+    sudo -u "$RUNNER_USER" -- tar xzf "$RUNNER_LOCAL_BASE/actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz"
+  fi
+
+  restore_runner_state "$state_dir" "$local_dir"
 
   # Disable debug output while running 3rd party scripts
   #set +x
@@ -163,6 +232,8 @@ for i in $(seq 1 "$RUNNER_COUNT"); do
   fi
   ./svc.sh start
 
-  cd "$current_dir"
+  persist_runner_state "$local_dir" "$state_dir"
+
+  cd "$RUNNER_LOCAL_BASE"
 
 done
