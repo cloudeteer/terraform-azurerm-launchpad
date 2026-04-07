@@ -8,12 +8,22 @@ locals {
 
   storage_container_name = coalesce(var.name_overrides.storage_container, "tfstate")
 
+  runner_storage_account_name = join("", compact([
+    "st", var.name, "runner", local.location_short[var.location], one(random_string.stlaunchpadprd_suffix[*].result)
+  ]))
+
+  runner_storage_share_name = "actions-runner"
+
   storage_private_endpoint_name = coalesce(
     var.name_overrides.storage_private_endpoint,
     join("-", compact([
       "pe", azurerm_storage_account.this.name, "prd", local.location_short[var.location], var.name_suffix
     ]))
   )
+
+  runner_storage_private_endpoint_name = join("-", compact([
+    "pe", local.runner_storage_account_name, "file", "prd", local.location_short[var.location], var.name_suffix
+  ]))
 }
 
 resource "random_string" "stlaunchpadprd_suffix" {
@@ -77,7 +87,7 @@ resource "azurerm_storage_account" "this" {
 
 resource "azurerm_storage_container" "this" {
   name                  = local.storage_container_name
-  storage_account_name  = azurerm_storage_account.this.name
+  storage_account_id    = azurerm_storage_account.this.id
   container_access_type = "private"
 }
 
@@ -93,6 +103,53 @@ resource "azurerm_private_endpoint" "storage_account" {
     name                           = "blob"
     private_connection_resource_id = azurerm_storage_account.this.id
     subresource_names              = ["blob"]
+    is_manual_connection           = false
+  }
+}
+
+resource "azurerm_storage_account" "runner" {
+  name                = local.runner_storage_account_name
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  tags                = var.tags
+
+  account_kind             = "StorageV2"
+  account_tier             = "Standard"
+  account_replication_type = "ZRS"
+
+  allow_nested_items_to_be_public   = false
+  cross_tenant_replication_enabled  = false
+  default_to_oauth_authentication   = true
+  https_traffic_only_enabled        = true
+  infrastructure_encryption_enabled = true
+  is_hns_enabled                    = false
+  large_file_share_enabled          = false
+  min_tls_version                   = "TLS1_2"
+  public_network_access_enabled     = false
+
+  # Required for SMB mounting Azure Files from Linux
+  shared_access_key_enabled = true
+}
+
+resource "azurerm_storage_share" "runner_actions_runner" {
+  name               = local.runner_storage_share_name
+  storage_account_id = azurerm_storage_account.runner.id
+  enabled_protocol   = "SMB"
+  quota              = 100
+}
+
+resource "azurerm_private_endpoint" "runner_storage_account_file" {
+  name                = local.runner_storage_private_endpoint_name
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  tags                = var.tags
+
+  subnet_id = local.subnet_id
+
+  private_service_connection {
+    name                           = "file"
+    private_connection_resource_id = azurerm_storage_account.runner.id
+    subresource_names              = ["file"]
     is_manual_connection           = false
   }
 }

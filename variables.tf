@@ -192,10 +192,10 @@ variable "runner_github_environments" {
   description = "List of Github environments used by federal identity."
 }
 
-variable "runner_github_pat" {
+variable "runner_token" {
   type        = string
   sensitive   = true
-  description = "GitHub PAT that will be used to register GitHub Action Runner tokens"
+  description = "GitHub Actions runner join/registration token. Provide this at deploy time; it will be persisted on the runner via the mounted /opt/actions-runner folder."
 }
 
 variable "runner_github_repo" {

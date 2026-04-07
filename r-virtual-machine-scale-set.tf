@@ -6,10 +6,16 @@ locals {
     private_endpoint_storage_account_ip = one(azurerm_private_endpoint.storage_account.private_service_connection[*].private_ip_address)
     storage_account_hostname            = azurerm_storage_account.this.primary_blob_host
 
+    private_endpoint_runner_storage_account_ip = one(azurerm_private_endpoint.runner_storage_account_file.private_service_connection[*].private_ip_address)
+    runner_storage_account_hostname            = azurerm_storage_account.runner.primary_file_host
+    runner_storage_account_name                = azurerm_storage_account.runner.name
+    runner_storage_account_key                 = azurerm_storage_account.runner.primary_access_key
+    runner_storage_share_name                  = azurerm_storage_share.runner_actions_runner.name
+
     runner_arch        = var.runner_arch
     runner_count       = var.runner_count
-    runner_github_pat  = var.runner_github_pat
     runner_github_repo = var.runner_github_repo
+    runner_token       = var.runner_token
     runner_user        = var.runner_user
     runner_version     = var.runner_version
   }))
