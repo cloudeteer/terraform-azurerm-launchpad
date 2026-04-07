@@ -111,23 +111,11 @@ restore_runner_state() {
   local state_dir=$1
   local local_dir=$2
 
+  # If state exists (identified by .runner), all required files must exist.
   if [ -f "$state_dir/.runner" ]; then
-    cp -f "$state_dir/.runner" "$local_dir/.runner"
-  fi
-  if [ -f "$state_dir/.credentials" ]; then
-    cp -f "$state_dir/.credentials" "$local_dir/.credentials"
-  fi
-  if [ -f "$state_dir/.credentials_rsaparams" ]; then
-    cp -f "$state_dir/.credentials_rsaparams" "$local_dir/.credentials_rsaparams"
-  fi
-  if [ -f "$state_dir/.service" ]; then
-    cp -f "$state_dir/.service" "$local_dir/.service"
-  fi
-  if [ -f "$state_dir/svc.sh" ]; then
-    cp -f "$state_dir/svc.sh" "$local_dir/svc.sh"
-  fi
-  if [ -f "$state_dir/runsvc.sh" ]; then
-    cp -f "$state_dir/runsvc.sh" "$local_dir/runsvc.sh"
+    for f in .runner .credentials .credentials_rsaparams .service svc.sh runsvc.sh; do
+      cp -f "$state_dir/$f" "$local_dir/$f"
+    done
   fi
 
   if [ -d "$state_dir/_diag" ]; then
@@ -136,24 +124,12 @@ restore_runner_state() {
   fi
 
   chown -R "$RUNNER_USER:$RUNNER_USER" "$local_dir"
-  if [ -f "$local_dir/.runner" ]; then
-    chmod 600 "$local_dir/.runner"
-  fi
-  if [ -f "$local_dir/.credentials" ]; then
-    chmod 600 "$local_dir/.credentials"
-  fi
-  if [ -f "$local_dir/.credentials_rsaparams" ]; then
-    chmod 600 "$local_dir/.credentials_rsaparams"
-  fi
-  if [ -f "$local_dir/.service" ]; then
-    chmod 600 "$local_dir/.service"
-  fi
-  if [ -f "$local_dir/svc.sh" ]; then
-    chmod 755 "$local_dir/svc.sh"
-  fi
-  if [ -f "$local_dir/runsvc.sh" ]; then
-    chmod 755 "$local_dir/runsvc.sh"
-  fi
+  for f in .runner .credentials .credentials_rsaparams .service; do
+    [ -f "$local_dir/$f" ] && chmod 600 "$local_dir/$f"
+  done
+  for f in svc.sh runsvc.sh; do
+    [ -f "$local_dir/$f" ] && chmod 755 "$local_dir/$f"
+  done
 }
 
 persist_runner_state() {
@@ -161,24 +137,21 @@ persist_runner_state() {
   local state_dir=$2
 
   mkdir -p "$state_dir"
-  if [ -f "$local_dir/.runner" ]; then
-    install -m 600 "$local_dir/.runner" "$state_dir/.runner"
-  fi
-  if [ -f "$local_dir/.credentials" ]; then
-    install -m 600 "$local_dir/.credentials" "$state_dir/.credentials"
-  fi
-  if [ -f "$local_dir/.credentials_rsaparams" ]; then
-    install -m 600 "$local_dir/.credentials_rsaparams" "$state_dir/.credentials_rsaparams"
-  fi
-  if [ -f "$local_dir/.service" ]; then
-    install -m 600 "$local_dir/.service" "$state_dir/.service"
-  fi
-  if [ -f "$local_dir/svc.sh" ]; then
-    install -m 755 "$local_dir/svc.sh" "$state_dir/svc.sh"
-  fi
-  if [ -f "$local_dir/runsvc.sh" ]; then
-    install -m 755 "$local_dir/runsvc.sh" "$state_dir/runsvc.sh"
-  fi
+
+  # Persisted state is expected to be complete; fail if any file is missing.
+  for f in .runner .credentials .credentials_rsaparams .service svc.sh runsvc.sh; do
+    if [ ! -f "$local_dir/$f" ]; then
+      echo "Required runner state file missing: $local_dir/$f" >&2
+      exit 1
+    fi
+  done
+
+  for f in .runner .credentials .credentials_rsaparams .service; do
+    install -m 600 "$local_dir/$f" "$state_dir/$f"
+  done
+  for f in svc.sh runsvc.sh; do
+    install -m 755 "$local_dir/$f" "$state_dir/$f"
+  done
 
   if [ -d "$local_dir/_diag" ]; then
     mkdir -p "$state_dir/_diag"
