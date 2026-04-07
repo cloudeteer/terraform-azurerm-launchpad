@@ -36,10 +36,10 @@ apt-get install -yqq curl jq unzip python3 python3-pip cifs-utils
 ln -sf /usr/bin/python3 /usr/bin/python
 
 # Install Azure CLI
-#curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
 # Install Azure AKS CLI (kubelogin)
-#sudo az aks install-cli
+sudo az aks install-cli
 
 RUNNER_NAME=$(hostname)
 
@@ -123,6 +123,12 @@ restore_runner_state() {
   if [ -f "$state_dir/.service" ]; then
     cp -f "$state_dir/.service" "$local_dir/.service"
   fi
+  if [ -f "$state_dir/svc.sh" ]; then
+    cp -f "$state_dir/svc.sh" "$local_dir/svc.sh"
+  fi
+  if [ -f "$state_dir/runsvc.sh" ]; then
+    cp -f "$state_dir/runsvc.sh" "$local_dir/runsvc.sh"
+  fi
 
   if [ -d "$state_dir/_diag" ]; then
     mkdir -p "$local_dir/_diag"
@@ -141,6 +147,12 @@ restore_runner_state() {
   fi
   if [ -f "$local_dir/.service" ]; then
     chmod 600 "$local_dir/.service"
+  fi
+  if [ -f "$local_dir/svc.sh" ]; then
+    chmod 755 "$local_dir/svc.sh"
+  fi
+  if [ -f "$local_dir/runsvc.sh" ]; then
+    chmod 755 "$local_dir/runsvc.sh"
   fi
 }
 
@@ -161,13 +173,17 @@ persist_runner_state() {
   if [ -f "$local_dir/.service" ]; then
     install -m 600 "$local_dir/.service" "$state_dir/.service"
   fi
+  if [ -f "$local_dir/svc.sh" ]; then
+    install -m 755 "$local_dir/svc.sh" "$state_dir/svc.sh"
+  fi
+  if [ -f "$local_dir/runsvc.sh" ]; then
+    install -m 755 "$local_dir/runsvc.sh" "$state_dir/runsvc.sh"
+  fi
 
   if [ -d "$local_dir/_diag" ]; then
     mkdir -p "$state_dir/_diag"
     cp -a "$local_dir/_diag/." "$state_dir/_diag/" || true
   fi
-
-  # Azure Files (CIFS) may reject chown/chgrp operations; uid/gid are controlled by mount options.
 }
 
 # Get the latest version
@@ -191,7 +207,7 @@ curl -sS --fail -L -o "actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz"
 
 for i in $(seq 1 "$RUNNER_COUNT"); do
   local_dir="$RUNNER_LOCAL_BASE/$i"
-  state_dir="$RUNNER_STATE_BASE/$i"
+  state_dir="$RUNNER_STATE_BASE/$RUNNER_NAME/$i"
 
   mkdir -p "$local_dir" "/tmp/$i"
   chown -R "$RUNNER_USER:$RUNNER_USER" "/tmp/$i" "$local_dir"
@@ -205,7 +221,7 @@ for i in $(seq 1 "$RUNNER_COUNT"); do
   restore_runner_state "$state_dir" "$local_dir"
 
   # Disable debug output while running 3rd party scripts
-  #set +x
+  set +x
 
   if [ -f ".credentials" ]; then
     echo "Runner already configured (found .credentials), skipping config for $RUNNER_NAME-$i"
@@ -222,14 +238,28 @@ for i in $(seq 1 "$RUNNER_COUNT"); do
 
   # Reimages keep runner credentials on Azure Files but not host services.
   # Ensure service exists and is running on every provisioning run.
-  SERVICE_NAME=""
-  if [ -f ".service" ]; then
-    SERVICE_NAME=$(jq -r '.serviceName // empty' .service)
+  SERVICE_NAME=$(head -n1 .service 2>/dev/null || true)
+  if [ -n "$SERVICE_NAME" ]; then
+    case "$SERVICE_NAME" in
+      *.service) ;;
+      *) SERVICE_NAME="$SERVICE_NAME.service" ;;
+    esac
   fi
 
-  if [ -z "$SERVICE_NAME" ] || [ ! -f "/etc/systemd/system/$SERVICE_NAME.service" ]; then
+  if [ ! -x "./svc.sh" ]; then
+    echo "Missing executable svc.sh in $local_dir" >&2
+    exit 1
+  fi
+
+  UNIT_PATH=""
+  if [ -n "$SERVICE_NAME" ]; then
+    UNIT_PATH="/etc/systemd/system/$SERVICE_NAME"
+  fi
+
+  if [ -z "$UNIT_PATH" ] || [ ! -f "$UNIT_PATH" ]; then
     ./svc.sh install "$RUNNER_USER"
   fi
+
   ./svc.sh start
 
   persist_runner_state "$local_dir" "$state_dir"
