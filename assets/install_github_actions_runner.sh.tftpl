@@ -22,22 +22,27 @@ echo "${private_endpoint_key_vault_ip} ${key_vault_hostname}" >>/etc/hosts
 # shellcheck disable=SC1083,SC2288
 %{ endif }
 
+# shellcheck disable=SC1083,SC2288
+%{ if private_endpoint_runner_storage_account_ip != "" && runner_storage_account_hostname != "" }
+# shellcheck disable=SC2154
+echo "${private_endpoint_runner_storage_account_ip} ${runner_storage_account_hostname}" >>/etc/hosts
+# shellcheck disable=SC1083,SC2288
+%{ endif }
+
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -yqq
-apt-get install -yqq curl jq unzip python3 python3-pip
-ln -s /usr/bin/python3 /usr/bin/python
+apt-get install -yqq curl jq unzip python3 python3-pip cifs-utils
+ln -sf /usr/bin/python3 /usr/bin/python
 
 # Install Azure CLI
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+#curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
 # Install Azure AKS CLI (kubelogin)
-sudo az aks install-cli
+#sudo az aks install-cli
 
 RUNNER_NAME=$(hostname)
 
 # Fill variables with Terraform templatefile()
-# shellcheck disable=SC2154
-GITHUB_PAT=${runner_github_pat}
 # shellcheck disable=SC2154
 RUNNER_ARCH=${runner_arch}
 # shellcheck disable=SC2154
@@ -48,6 +53,56 @@ RUNNER_GITHUB_REPO=${runner_github_repo}
 RUNNER_VERSION=${runner_version}
 # shellcheck disable=SC2154
 RUNNER_USER=${runner_user}
+# shellcheck disable=SC2154
+RUNNER_TOKEN=${runner_token}
+
+# Set up unprivileged user (needed before mounting with uid/gid)
+id "$RUNNER_USER" &>/dev/null || useradd --create-home --system \
+  --comment "GitHub actions runner unprivileged user" \
+  --home "/home/$RUNNER_USER" \
+  --shell /usr/sbin/nologin \
+  "$RUNNER_USER"
+
+# Persist runner credentials/config across VM reimages by mounting Azure Files to /opt/actions-runner
+# shellcheck disable=SC2154
+RUNNER_SA_HOST=${runner_storage_account_hostname}
+# shellcheck disable=SC2154
+RUNNER_SA_NAME=${runner_storage_account_name}
+# shellcheck disable=SC2154
+RUNNER_SA_KEY=${runner_storage_account_key}
+# shellcheck disable=SC2154
+RUNNER_SHARE=${runner_storage_share_name}
+
+mkdir -p /etc/smbcredentials
+cat >/etc/smbcredentials/"$RUNNER_SA_NAME".cred <<EOF
+username=$RUNNER_SA_NAME
+password=$RUNNER_SA_KEY
+EOF
+chmod 600 /etc/smbcredentials/"$RUNNER_SA_NAME".cred
+
+mkdir -p /opt/actions-runner
+RUNNER_UID=$(id -u "$RUNNER_USER")
+RUNNER_GID=$(id -g "$RUNNER_USER")
+
+# Azure Files over SMB does not preserve Unix perms; ensure executables remain runnable.
+CIFS_OPTS="credentials=/etc/smbcredentials/$RUNNER_SA_NAME.cred,vers=3.0,serverino,nofail,_netdev,dir_mode=0775,file_mode=0775,uid=$RUNNER_UID,gid=$RUNNER_GID,mfsymlinks"
+
+if mountpoint -q /opt/actions-runner; then
+  mount -t cifs -o "remount,$CIFS_OPTS" "//$RUNNER_SA_HOST/$RUNNER_SHARE" /opt/actions-runner
+else
+  for retry in $(seq 1 12); do
+    if mount -t cifs "//$RUNNER_SA_HOST/$RUNNER_SHARE" /opt/actions-runner -o "$CIFS_OPTS"; then
+      break
+    fi
+    if [ "$retry" -eq 12 ]; then
+      echo "Failed to mount //$RUNNER_SA_HOST/$RUNNER_SHARE after retries" >&2
+      exit 1
+    fi
+    sleep 5
+  done
+fi
+
+grep -q " /opt/actions-runner " /etc/fstab || echo "//$RUNNER_SA_HOST/$RUNNER_SHARE /opt/actions-runner cifs credentials=/etc/smbcredentials/$RUNNER_SA_NAME.cred,vers=3.0,serverino,nofail,_netdev,dir_mode=0775,file_mode=0775,uid=$(id -u "$RUNNER_USER"),gid=$(id -g "$RUNNER_USER"),mfsymlinks 0 0" >>/etc/fstab
 
 # Get the latest version
 if [ "$RUNNER_VERSION" = "latest" ]; then
@@ -58,27 +113,10 @@ if [ "$RUNNER_VERSION" = "latest" ]; then
   RUNNER_VERSION=$${RUNNER_VERSION#v}
 fi
 
-# Register new runner token (with GITHUB_PAT)
-RUNNER_TOKEN=$(curl -sS --fail -L \
-  -X POST \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer $GITHUB_PAT" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  "https://api.github.com/repos/$RUNNER_GITHUB_REPO/actions/runners/registration-token" | jq -r ".token")
-
-# Set up unprivileged user
-id "$RUNNER_USER" &>/dev/null || useradd --create-home --system \
-  --comment "GitHub actions runner unprivileged user" \
-  --home "/home/$RUNNER_USER" \
-  --shell /usr/sbin/nologin \
-  "$RUNNER_USER"
-
 # Add GitHub SSH host keys to known hosts
 sudo -u "$RUNNER_USER" -- mkdir -p /home/$RUNNER_USER/.ssh
 sudo -u "$RUNNER_USER" -- ssh-keyscan -t rsa github.com | sudo -u "$RUNNER_USER" -- tee -a "/home/$RUNNER_USER/.ssh/known_hosts"
 
-# Create base install directory
-mkdir -p /opt/actions-runner
 cd /opt/actions-runner
 
 # Download the latest runner package
@@ -89,27 +127,42 @@ for i in $(seq 1 "$RUNNER_COUNT"); do
   current_dir=$PWD
 
   mkdir -p "$i"
-  chown "$RUNNER_USER" "$i"
+  mkdir -p "/tmp/$i"
+  chown -R "$RUNNER_USER" "/tmp/$i"
+  chown -R "$RUNNER_USER" "$i"
   cd "$i"
 
   # Extract the installer
   sudo -u "$RUNNER_USER" -- tar xzf "../actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz"
 
   # Disable debug output while running 3rd party scripts
-  set +x
+  #set +x
 
-  # Configure the runner
-  sudo -u "$RUNNER_USER" -- ./config.sh --unattended --replace \
-    --url "https://github.com/$RUNNER_GITHUB_REPO" \
-    --token "$RUNNER_TOKEN" \
-    --name "$RUNNER_NAME-$i" \
-    --labels cdt-iac-launchpad
+  if [ -f ".credentials" ]; then
+    echo "Runner already configured (found .credentials), skipping config for $RUNNER_NAME-$i"
+  else
+    # Configure the runner
+    sudo -u "$RUNNER_USER" -- ./config.sh --unattended --replace \
+      --url "https://github.com/$RUNNER_GITHUB_REPO" \
+      --token "$RUNNER_TOKEN" \
+      --name "$RUNNER_NAME-$i" \
+      --labels cdt-iac-launchpad \
+      --work "/tmp/$i"
 
-  ./svc.sh install "$RUNNER_USER"
+  fi
+
+  # Reimages keep runner credentials on Azure Files but not host services.
+  # Ensure service exists and is running on every provisioning run.
+  SERVICE_NAME=""
+  if [ -f ".service" ]; then
+    SERVICE_NAME=$(jq -r '.serviceName // empty' .service)
+  fi
+
+  if [ -z "$SERVICE_NAME" ] || [ ! -f "/etc/systemd/system/$SERVICE_NAME.service" ]; then
+    ./svc.sh install "$RUNNER_USER"
+  fi
   ./svc.sh start
 
-  # Enable debug output again
-  set -x
   cd "$current_dir"
 
 done
