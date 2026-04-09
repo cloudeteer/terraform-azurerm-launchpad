@@ -79,39 +79,54 @@ az_login() {
   done
 }
 
+az_retry() {
+  local attempts=3
+  local delay_s=1
+
+  for retry in $(seq 1 "$attempts"); do
+    if "$@"; then
+      return 0
+    fi
+    if [ "$retry" -lt "$attempts" ]; then
+      sleep "$delay_s"
+    fi
+  done
+  return 1
+}
+
 blob_exists() {
   local blob_name=$1
-  az storage blob exists \
-    --auth-mode login \
-    --account-name "$STORAGE_ACCOUNT_NAME" \
-    --container-name "$RUNNER_STATE_CONTAINER_NAME" \
-    --name "$blob_name" \
-    --query exists -o tsv
+  az_retry az storage blob exists \
+      --auth-mode login \
+      --account-name "$STORAGE_ACCOUNT_NAME" \
+      --container-name "$RUNNER_STATE_CONTAINER_NAME" \
+      --name "$blob_name" \
+      --query exists -o tsv
 }
 
 blob_download() {
   local blob_name=$1
   local dest=$2
-  az storage blob download \
-    --auth-mode login \
-    --account-name "$STORAGE_ACCOUNT_NAME" \
-    --container-name "$RUNNER_STATE_CONTAINER_NAME" \
-    --name "$blob_name" \
-    --file "$dest" \
-    --only-show-errors 1>/dev/null
+  az_retry az storage blob download \
+      --auth-mode login \
+      --account-name "$STORAGE_ACCOUNT_NAME" \
+      --container-name "$RUNNER_STATE_CONTAINER_NAME" \
+      --name "$blob_name" \
+      --file "$dest" \
+      --only-show-errors 1>/dev/null
 }
 
 blob_upload() {
   local src=$1
   local blob_name=$2
-  az storage blob upload \
-    --auth-mode login \
-    --account-name "$STORAGE_ACCOUNT_NAME" \
-    --container-name "$RUNNER_STATE_CONTAINER_NAME" \
-    --name "$blob_name" \
-    --file "$src" \
-    --overwrite true \
-    --only-show-errors 1>/dev/null
+  az_retry az storage blob upload \
+      --auth-mode login \
+      --account-name "$STORAGE_ACCOUNT_NAME" \
+      --container-name "$RUNNER_STATE_CONTAINER_NAME" \
+      --name "$blob_name" \
+      --file "$src" \
+      --overwrite true \
+      --only-show-errors 1>/dev/null
 }
 
 restore_runner_state() {
