@@ -49,7 +49,7 @@ module "example" {
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  runner_token  = var.my_runner_token
+  runner_token       = var.my_runner_token
   runner_github_repo = var.my_runner_github_repo
 
   virtual_network_address_space = ["10.0.0.0/16"]
@@ -65,6 +65,8 @@ The following providers are used by this module:
 - <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (>= 3.114)
 
 - <a name="provider_random"></a> [random](#provider\_random) (>= 3.6)
+
+- <a name="provider_terraform"></a> [terraform](#provider\_terraform)
 
 
 
@@ -98,6 +100,7 @@ The following resources are used by this module:
 - [random_password.virtual_machine_scale_set_admin_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) (resource)
 - [random_string.kvlaunchpadprd_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) (resource)
 - [random_string.stlaunchpadprd_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) (resource)
+- [terraform_data.runner_token_trigger](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 - [azurerm_management_group.managed_by_launchpad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/management_group) (data source)
 - [azurerm_subscription.managed_by_launchpad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) (data source)
@@ -126,7 +129,7 @@ Type: `string`
 
 ### <a name="input_runner_token"></a> [runner\_token](#input\_runner\_token)
 
-Description: GitHub Actions runner join/registration token. Provide this at deploy time; it will be persisted on the runner via the mounted /opt/actions-runner folder.
+Description: GitHub Actions runner join/registration token. Changing this value will force replacement of the runner state Azure Files share.
 
 Type: `string`
 

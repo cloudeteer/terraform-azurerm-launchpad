@@ -131,11 +131,19 @@ resource "azurerm_storage_account" "runner" {
   shared_access_key_enabled = true
 }
 
+resource "terraform_data" "runner_token_trigger" {
+  input = nonsensitive(sha256(var.runner_token))
+}
+
 resource "azurerm_storage_share" "runner_actions_runner" {
   name               = local.runner_storage_share_name
   storage_account_id = azurerm_storage_account.runner.id
   enabled_protocol   = "SMB"
   quota              = 100
+
+  lifecycle {
+    replace_triggered_by = [terraform_data.runner_token_trigger]
+  }
 }
 
 resource "azurerm_private_endpoint" "runner_storage_account_file" {

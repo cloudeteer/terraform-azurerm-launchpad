@@ -195,7 +195,7 @@ variable "runner_github_environments" {
 variable "runner_token" {
   type        = string
   sensitive   = true
-  description = "GitHub Actions runner join/registration token. Provide this at deploy time; it will be persisted on the runner via the mounted /opt/actions-runner folder."
+  description = "GitHub Actions runner join/registration token. Changing this value will force replacement of the runner state Azure Files share."
 }
 
 variable "runner_github_repo" {
