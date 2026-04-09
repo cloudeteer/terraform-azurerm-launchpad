@@ -23,16 +23,9 @@ echo "${private_endpoint_key_vault_ip} ${key_vault_hostname}" >>/etc/hosts
 # shellcheck disable=SC1083,SC2288
 %{ endif }
 
-# shellcheck disable=SC1083,SC2288
-%{ if private_endpoint_runner_storage_account_ip != "" && runner_storage_account_hostname != "" }
-# shellcheck disable=SC2154
-echo "${private_endpoint_runner_storage_account_ip} ${runner_storage_account_hostname}" >>/etc/hosts
-# shellcheck disable=SC1083,SC2288
-%{ endif }
-
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -yqq
-apt-get install -yqq curl jq unzip python3 python3-pip cifs-utils
+apt-get install -yqq curl jq unzip python3 python3-pip
 ln -sf /usr/bin/python3 /usr/bin/python
 
 # Install Azure CLI
@@ -56,6 +49,12 @@ RUNNER_VERSION=${runner_version}
 RUNNER_USER=${runner_user}
 # shellcheck disable=SC2154
 RUNNER_TOKEN=${runner_token}
+# shellcheck disable=SC2154
+STORAGE_ACCOUNT_NAME=${storage_account_name}
+# shellcheck disable=SC2154
+RUNNER_STATE_CONTAINER_NAME=${runner_state_container_name}
+# shellcheck disable=SC2154
+RUNNER_STATE_PREFIX=${runner_state_prefix}
 
 # Set up unprivileged user (needed before mounting with uid/gid)
 id "$RUNNER_USER" &>/dev/null || useradd --create-home --system \
@@ -64,63 +63,66 @@ id "$RUNNER_USER" &>/dev/null || useradd --create-home --system \
   --shell /usr/sbin/nologin \
   "$RUNNER_USER"
 
-# Persist only runner identity/config files across VM reimages by mounting Azure Files to a state path.
-# shellcheck disable=SC2154
-RUNNER_SA_HOST=${runner_storage_account_hostname}
-# shellcheck disable=SC2154
-RUNNER_SA_NAME=${runner_storage_account_name}
-# shellcheck disable=SC2154
-RUNNER_SA_KEY=${runner_storage_account_key}
-# shellcheck disable=SC2154
-RUNNER_SHARE=${runner_storage_share_name}
 RUNNER_LOCAL_BASE=/opt/actions-runner
-RUNNER_STATE_BASE=/mnt/actions-runner-state
+mkdir -p "$RUNNER_LOCAL_BASE"
 
-mkdir -p /etc/smbcredentials
-cat >/etc/smbcredentials/"$RUNNER_SA_NAME".cred <<EOF
-username=$RUNNER_SA_NAME
-password=$RUNNER_SA_KEY
-EOF
-chmod 600 /etc/smbcredentials/"$RUNNER_SA_NAME".cred
-
-mkdir -p "$RUNNER_LOCAL_BASE" "$RUNNER_STATE_BASE"
-RUNNER_UID=$(id -u "$RUNNER_USER")
-RUNNER_GID=$(id -g "$RUNNER_USER")
-
-# Azure Files over SMB does not preserve Unix perms; ensure executables remain runnable.
-CIFS_OPTS="credentials=/etc/smbcredentials/$RUNNER_SA_NAME.cred,vers=3.0,serverino,nofail,_netdev,dir_mode=0775,file_mode=0775,uid=$RUNNER_UID,gid=$RUNNER_GID,mfsymlinks"
-
-if mountpoint -q "$RUNNER_STATE_BASE"; then
-  mount -t cifs -o "remount,$CIFS_OPTS" "//$RUNNER_SA_HOST/$RUNNER_SHARE" "$RUNNER_STATE_BASE"
-else
-  for retry in $(seq 1 12); do
-    if mount -t cifs "//$RUNNER_SA_HOST/$RUNNER_SHARE" "$RUNNER_STATE_BASE" -o "$CIFS_OPTS"; then
-      break
+az_login() {
+  for retry in $(seq 1 20); do
+    if az login --identity --allow-no-subscriptions 1>/dev/null; then
+      return 0
     fi
-    if [ "$retry" -eq 12 ]; then
-      echo "Failed to mount //$RUNNER_SA_HOST/$RUNNER_SHARE after retries" >&2
-      exit 1
+    if [ "$retry" -eq 20 ]; then
+      echo "Failed to login to Azure using managed identity" >&2
+      return 1
     fi
     sleep 5
   done
-fi
+}
 
-grep -q " $RUNNER_STATE_BASE " /etc/fstab || echo "//$RUNNER_SA_HOST/$RUNNER_SHARE $RUNNER_STATE_BASE cifs credentials=/etc/smbcredentials/$RUNNER_SA_NAME.cred,vers=3.0,serverino,nofail,_netdev,dir_mode=0775,file_mode=0775,uid=$(id -u "$RUNNER_USER"),gid=$(id -g "$RUNNER_USER"),mfsymlinks 0 0" >>/etc/fstab
+blob_exists() {
+  local blob_name=$1
+  az storage blob exists \
+    --auth-mode login \
+    --account-name "$STORAGE_ACCOUNT_NAME" \
+    --container-name "$RUNNER_STATE_CONTAINER_NAME" \
+    --name "$blob_name" \
+    --query exists -o tsv
+}
+
+blob_download() {
+  local blob_name=$1
+  local dest=$2
+  az storage blob download \
+    --auth-mode login \
+    --account-name "$STORAGE_ACCOUNT_NAME" \
+    --container-name "$RUNNER_STATE_CONTAINER_NAME" \
+    --name "$blob_name" \
+    --file "$dest" \
+    --only-show-errors 1>/dev/null
+}
+
+blob_upload() {
+  local src=$1
+  local blob_name=$2
+  az storage blob upload \
+    --auth-mode login \
+    --account-name "$STORAGE_ACCOUNT_NAME" \
+    --container-name "$RUNNER_STATE_CONTAINER_NAME" \
+    --name "$blob_name" \
+    --file "$src" \
+    --overwrite true \
+    --only-show-errors 1>/dev/null
+}
 
 restore_runner_state() {
-  local state_dir=$1
+  local blob_prefix=$1
   local local_dir=$2
 
-  # If state exists (identified by .runner), all required files must exist.
-  if [ -f "$state_dir/.runner" ]; then
+  # If state exists (identified by .runner blob), all required files must exist.
+  if [ "$(blob_exists "$blob_prefix/.runner")" = "true" ]; then
     for f in .runner .credentials .credentials_rsaparams .service svc.sh runsvc.sh; do
-      cp -f "$state_dir/$f" "$local_dir/$f"
+      blob_download "$blob_prefix/$f" "$local_dir/$f"
     done
-  fi
-
-  if [ -d "$state_dir/_diag" ]; then
-    mkdir -p "$local_dir/_diag"
-    cp -a "$state_dir/_diag/." "$local_dir/_diag/" || true
   fi
 
   chown -R "$RUNNER_USER:$RUNNER_USER" "$local_dir"
@@ -138,9 +140,7 @@ restore_runner_state() {
 
 persist_runner_state() {
   local local_dir=$1
-  local state_dir=$2
-
-  mkdir -p "$state_dir"
+  local blob_prefix=$2
 
   # Persisted state is expected to be complete; fail if any file is missing.
   for f in .runner .credentials .credentials_rsaparams .service svc.sh runsvc.sh; do
@@ -150,17 +150,9 @@ persist_runner_state() {
     fi
   done
 
-  for f in .runner .credentials .credentials_rsaparams .service; do
-    install -m 600 "$local_dir/$f" "$state_dir/$f"
+  for f in .runner .credentials .credentials_rsaparams .service svc.sh runsvc.sh; do
+    blob_upload "$local_dir/$f" "$blob_prefix/$f"
   done
-  for f in svc.sh runsvc.sh; do
-    install -m 755 "$local_dir/$f" "$state_dir/$f"
-  done
-
-  if [ -d "$local_dir/_diag" ]; then
-    mkdir -p "$state_dir/_diag"
-    cp -a "$local_dir/_diag/." "$state_dir/_diag/" || true
-  fi
 }
 
 # Get the latest version
@@ -176,6 +168,8 @@ fi
 sudo -u "$RUNNER_USER" -- mkdir -p /home/$RUNNER_USER/.ssh
 sudo -u "$RUNNER_USER" -- ssh-keyscan -t rsa github.com | sudo -u "$RUNNER_USER" -- tee -a "/home/$RUNNER_USER/.ssh/known_hosts"
 
+az_login
+
 cd "$RUNNER_LOCAL_BASE"
 
 # Download the latest runner package
@@ -184,7 +178,7 @@ curl -sS --fail -L -o "actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz"
 
 for i in $(seq 1 "$RUNNER_COUNT"); do
   local_dir="$RUNNER_LOCAL_BASE/$i"
-  state_dir="$RUNNER_STATE_BASE/$RUNNER_NAME/$i"
+  blob_prefix="$RUNNER_STATE_PREFIX/$RUNNER_NAME/$i"
 
   mkdir -p "$local_dir" "/tmp/$i"
   chown -R "$RUNNER_USER:$RUNNER_USER" "/tmp/$i" "$local_dir"
@@ -195,7 +189,7 @@ for i in $(seq 1 "$RUNNER_COUNT"); do
     sudo -u "$RUNNER_USER" -- tar xzf "$RUNNER_LOCAL_BASE/actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz"
   fi
 
-  restore_runner_state "$state_dir" "$local_dir"
+  restore_runner_state "$blob_prefix" "$local_dir"
 
   # Disable debug output while running 3rd party scripts
   set +x
@@ -239,7 +233,7 @@ for i in $(seq 1 "$RUNNER_COUNT"); do
 
   ./svc.sh start
 
-  persist_runner_state "$local_dir" "$state_dir"
+  persist_runner_state "$local_dir" "$blob_prefix"
 
   cd "$RUNNER_LOCAL_BASE"
 done

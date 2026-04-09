@@ -5,12 +5,10 @@ locals {
     private_endpoint_key_vault_ip       = var.create_key_vault ? one(azurerm_private_endpoint.key_vault[0].private_service_connection[*].private_ip_address) : "127.0.0.1"
     private_endpoint_storage_account_ip = one(azurerm_private_endpoint.storage_account.private_service_connection[*].private_ip_address)
     storage_account_hostname            = azurerm_storage_account.this.primary_blob_host
+    storage_account_name                = azurerm_storage_account.this.name
 
-    private_endpoint_runner_storage_account_ip = one(azurerm_private_endpoint.runner_storage_account_file.private_service_connection[*].private_ip_address)
-    runner_storage_account_hostname            = azurerm_storage_account.runner.primary_file_host
-    runner_storage_account_name                = azurerm_storage_account.runner.name
-    runner_storage_account_key                 = azurerm_storage_account.runner.primary_access_key
-    runner_storage_share_name                  = azurerm_storage_share.runner_actions_runner.name
+    runner_state_container_name = azurerm_storage_container.runner_state.name
+    runner_state_prefix         = "actions-runner-state"
 
     runner_arch        = var.runner_arch
     runner_count       = var.runner_count
@@ -68,6 +66,11 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   secure_boot_enabled          = false
   vtpm_enabled                 = false
   overprovision                = false
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.this.id]
+  }
 
   # trigger instance update
   custom_data = base64encode("#cloud-config\n#${sha256(local.github_runner_script)}")
@@ -136,6 +139,12 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
       port     = 22
     })
   }
+}
+
+resource "azurerm_role_assignment" "vmss_runner_state_blob_contributor" {
+  principal_id         = azurerm_user_assigned_identity.this.principal_id
+  role_definition_name = "Storage Blob Data Contributor"
+  scope                = azurerm_storage_container.runner_state.resource_manager_id
 }
 
 resource "random_password" "virtual_machine_scale_set_admin_password" {
