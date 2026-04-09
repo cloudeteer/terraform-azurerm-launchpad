@@ -125,10 +125,14 @@ restore_runner_state() {
 
   chown -R "$RUNNER_USER:$RUNNER_USER" "$local_dir"
   for f in .runner .credentials .credentials_rsaparams .service; do
-    [ -f "$local_dir/$f" ] && chmod 600 "$local_dir/$f"
+    if [ -f "$local_dir/$f" ]; then
+      chmod 600 "$local_dir/$f"
+    fi
   done
   for f in svc.sh runsvc.sh; do
-    [ -f "$local_dir/$f" ] && chmod 755 "$local_dir/$f"
+    if [ -f "$local_dir/$f" ]; then
+      chmod 755 "$local_dir/$f"
+    fi
   done
 }
 
