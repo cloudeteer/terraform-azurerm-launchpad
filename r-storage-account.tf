@@ -83,8 +83,8 @@ resource "azurerm_storage_container" "tfstate" {
 }
 
 moved {
-  from = "azurerm_storage_container.this"
-  to   = "azurerm_storage_container.tfstate"
+  from = azurerm_storage_container.this
+  to   = azurerm_storage_container.tfstate
 }
 
 resource "azurerm_storage_container" "runner_state" {

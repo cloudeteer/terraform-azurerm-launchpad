@@ -21,8 +21,8 @@ resource "azurerm_user_assigned_identity" "launchpad_deploy" {
 }
 
 moved {
-  from = "azurerm_user_assigned_identity.this"
-  to   = "azurerm_user_assigned_identity.launchpad_deploy"
+  from = azurerm_user_assigned_identity.this
+  to   = azurerm_user_assigned_identity.launchpad_deploy
 }
 
 resource "azurerm_user_assigned_identity" "launchpad_data" {
