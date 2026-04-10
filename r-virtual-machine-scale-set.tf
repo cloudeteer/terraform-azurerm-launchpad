@@ -69,7 +69,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
 
   identity {
     type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.this.id]
+    identity_ids = [azurerm_user_assigned_identity.launchpad_data.id]
   }
 
   # trigger instance update
@@ -139,12 +139,6 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
       port     = 22
     })
   }
-}
-
-resource "azurerm_role_assignment" "vmss_runner_state_blob_contributor" {
-  principal_id         = azurerm_user_assigned_identity.this.principal_id
-  role_definition_name = "Storage Blob Data Contributor"
-  scope                = azurerm_storage_container.runner_state.resource_manager_id
 }
 
 resource "random_password" "virtual_machine_scale_set_admin_password" {

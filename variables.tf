@@ -131,6 +131,7 @@ variable "name_overrides" {
     network_security_group         = optional(string)
     storage_account                = optional(string)
     storage_container              = optional(string)
+    storage_container_data         = optional(string)
     storage_private_endpoint       = optional(string)
     subnet                         = optional(string)
     user_assigned_identity         = optional(string)
