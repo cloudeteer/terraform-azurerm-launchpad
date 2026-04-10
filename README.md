@@ -28,10 +28,10 @@ For a comprehensive list of tools available on the Launchpad runner, see [TOOLS.
 
 This example demonstrates how to deploy the Launchpad in a default scenario.
 
-The two variables, `runner_github_pat` and `runner_github_repo`, should be set at runtime during deployment using the environment variables `TF_VAR_runner_github_pat` and `TF_VAR_runner_github_repo`.
+The two variables, `runner_token` and `runner_github_repo`, should be set at runtime during deployment using the environment variables `TF_VAR_runner_token` and `TF_VAR_runner_github_repo`.
 
 ```hcl
-variable "my_runner_github_pat" {
+variable "my_runner_token" {
   type = string
 }
 variable "my_runner_github_repo" {
@@ -49,7 +49,7 @@ module "example" {
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  runner_github_pat  = var.my_runner_github_pat
+  runner_token       = var.my_runner_token
   runner_github_repo = var.my_runner_github_repo
 
   virtual_network_address_space = ["10.0.0.0/16"]
@@ -86,11 +86,14 @@ The following resources are used by this module:
 - [azurerm_role_assignment.resource_specific](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_role_assignment.storage_account_blob_owner_current_user](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_role_assignment.subscription_owner](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
+- [azurerm_role_assignment.vmss_runner_state_blob_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_storage_account.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
-- [azurerm_storage_container.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_container) (resource)
+- [azurerm_storage_container.runner_state](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_container) (resource)
+- [azurerm_storage_container.tfstate](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_container) (resource)
 - [azurerm_subnet.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
 - [azurerm_subnet_network_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet_network_security_group_association) (resource)
-- [azurerm_user_assigned_identity.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity) (resource)
+- [azurerm_user_assigned_identity.launchpad_data](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity) (resource)
+- [azurerm_user_assigned_identity.launchpad_deploy](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity) (resource)
 - [azurerm_virtual_network.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)
 - [random_password.virtual_machine_scale_set_admin_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) (resource)
 - [random_string.kvlaunchpadprd_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) (resource)
@@ -115,15 +118,15 @@ Description: The name of the resource group in which the virtual machine should 
 
 Type: `string`
 
-### <a name="input_runner_github_pat"></a> [runner\_github\_pat](#input\_runner\_github\_pat)
-
-Description: GitHub PAT that will be used to register GitHub Action Runner tokens
-
-Type: `string`
-
 ### <a name="input_runner_github_repo"></a> [runner\_github\_repo](#input\_runner\_github\_repo)
 
 Description: Specify the GitHub repository owner and name seperated by `/` to register the action runner. e.g. `cloudeteer/squad-customer`
+
+Type: `string`
+
+### <a name="input_runner_token"></a> [runner\_token](#input\_runner\_token)
+
+Description: GitHub Actions runner join/registration token. Changing this value will force replacement of the runner state Azure Files share.
 
 Type: `string`
 
@@ -260,6 +263,7 @@ object({
     network_security_group         = optional(string)
     storage_account                = optional(string)
     storage_container              = optional(string)
+    storage_container_data         = optional(string)
     storage_private_endpoint       = optional(string)
     subnet                         = optional(string)
     user_assigned_identity         = optional(string)

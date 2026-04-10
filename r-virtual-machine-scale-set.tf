@@ -5,11 +5,15 @@ locals {
     private_endpoint_key_vault_ip       = var.create_key_vault ? one(azurerm_private_endpoint.key_vault[0].private_service_connection[*].private_ip_address) : "127.0.0.1"
     private_endpoint_storage_account_ip = one(azurerm_private_endpoint.storage_account.private_service_connection[*].private_ip_address)
     storage_account_hostname            = azurerm_storage_account.this.primary_blob_host
+    storage_account_name                = azurerm_storage_account.this.name
+
+    runner_state_container_name = azurerm_storage_container.runner_state.name
+    runner_state_prefix         = "actions-runner-state"
 
     runner_arch        = var.runner_arch
     runner_count       = var.runner_count
-    runner_github_pat  = var.runner_github_pat
     runner_github_repo = var.runner_github_repo
+    runner_token       = var.runner_token
     runner_user        = var.runner_user
     runner_version     = var.runner_version
   }))
@@ -62,6 +66,11 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   secure_boot_enabled          = false
   vtpm_enabled                 = false
   overprovision                = false
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.launchpad_data.id]
+  }
 
   # trigger instance update
   custom_data = base64encode("#cloud-config\n#${sha256(local.github_runner_script)}")

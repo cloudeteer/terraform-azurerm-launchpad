@@ -131,6 +131,7 @@ variable "name_overrides" {
     network_security_group         = optional(string)
     storage_account                = optional(string)
     storage_container              = optional(string)
+    storage_container_data         = optional(string)
     storage_private_endpoint       = optional(string)
     subnet                         = optional(string)
     user_assigned_identity         = optional(string)
@@ -192,10 +193,10 @@ variable "runner_github_environments" {
   description = "List of Github environments used by federal identity."
 }
 
-variable "runner_github_pat" {
+variable "runner_token" {
   type        = string
   sensitive   = true
-  description = "GitHub PAT that will be used to register GitHub Action Runner tokens"
+  description = "GitHub Actions runner join/registration token. Changing this value will force replacement of the runner state Azure Files share."
 }
 
 variable "runner_github_repo" {

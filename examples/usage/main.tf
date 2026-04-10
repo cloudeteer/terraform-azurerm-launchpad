@@ -1,4 +1,4 @@
-variable "my_runner_github_pat" {
+variable "my_runner_token" {
   type = string
 }
 variable "my_runner_github_repo" {
@@ -16,7 +16,7 @@ module "example" {
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  runner_github_pat  = var.my_runner_github_pat
+  runner_token       = var.my_runner_token
   runner_github_repo = var.my_runner_github_repo
 
   virtual_network_address_space = ["10.0.0.0/16"]

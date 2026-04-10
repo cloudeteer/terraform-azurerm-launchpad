@@ -6,7 +6,8 @@ locals {
     ]))
   )
 
-  storage_container_name = coalesce(var.name_overrides.storage_container, "tfstate")
+  storage_container_name      = coalesce(var.name_overrides.storage_container, "tfstate")
+  storage_container_name_data = coalesce(var.name_overrides.storage_container_data, "actions-runner-state")
 
   storage_private_endpoint_name = coalesce(
     var.name_overrides.storage_private_endpoint,
@@ -75,8 +76,19 @@ resource "azurerm_storage_account" "this" {
   }
 }
 
-resource "azurerm_storage_container" "this" {
+resource "azurerm_storage_container" "tfstate" {
   name                  = local.storage_container_name
+  storage_account_name  = azurerm_storage_account.this.name
+  container_access_type = "private"
+}
+
+moved {
+  from = azurerm_storage_container.this
+  to   = azurerm_storage_container.tfstate
+}
+
+resource "azurerm_storage_container" "runner_state" {
+  name                  = local.storage_container_name_data
   storage_account_name  = azurerm_storage_account.this.name
   container_access_type = "private"
 }
