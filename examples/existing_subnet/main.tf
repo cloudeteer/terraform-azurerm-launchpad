@@ -30,7 +30,7 @@ module "example" {
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
-  runner_token = var.my_runner_token
+  runner_token       = var.my_runner_token
   runner_github_repo = var.my_runner_github_repo
 
   management_group_names = ["mg-example"]
