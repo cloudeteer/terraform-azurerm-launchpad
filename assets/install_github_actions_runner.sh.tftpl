@@ -55,6 +55,9 @@ STORAGE_ACCOUNT_NAME=${storage_account_name}
 RUNNER_STATE_CONTAINER_NAME=${runner_state_container_name}
 # shellcheck disable=SC2154
 RUNNER_STATE_PREFIX=${runner_state_prefix}
+# Client ID of the user-assigned managed identity (launchpad_data); required so az login does not pick system-assigned or another UAMI.
+# shellcheck disable=SC2154
+RUNNER_MANAGED_IDENTITY_CLIENT_ID="${managed_identity_client_id}"
 
 # Set up unprivileged user (needed before mounting with uid/gid)
 id "$RUNNER_USER" &>/dev/null || useradd --create-home --system \
@@ -68,7 +71,7 @@ mkdir -p "$RUNNER_LOCAL_BASE"
 
 az_login() {
   for retry in $(seq 1 20); do
-    if az login --identity --allow-no-subscriptions 1>/dev/null; then
+    if az login --identity --client-id "$RUNNER_MANAGED_IDENTITY_CLIENT_ID" --allow-no-subscriptions 1>/dev/null; then
       return 0
     fi
     if [ "$retry" -eq 20 ]; then
