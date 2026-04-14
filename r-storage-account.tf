@@ -6,7 +6,8 @@ locals {
     ]))
   )
 
-  storage_container_name = coalesce(var.name_overrides.storage_container, "tfstate")
+  storage_container_name      = coalesce(var.name_overrides.storage_container, "tfstate")
+  storage_container_name_data = coalesce(var.name_overrides.storage_container_data, "actions-runner-state")
 
   storage_private_endpoint_name = coalesce(
     var.name_overrides.storage_private_endpoint,
@@ -75,8 +76,19 @@ resource "azurerm_storage_account" "this" {
   }
 }
 
-resource "azurerm_storage_container" "this" {
+resource "azurerm_storage_container" "tfstate" {
   name                  = local.storage_container_name
+  storage_account_name  = azurerm_storage_account.this.name
+  container_access_type = "private"
+}
+
+moved {
+  from = azurerm_storage_container.this
+  to   = azurerm_storage_container.tfstate
+}
+
+resource "azurerm_storage_container" "runner_state" {
+  name                  = local.storage_container_name_data
   storage_account_name  = azurerm_storage_account.this.name
   container_access_type = "private"
 }
@@ -103,5 +115,5 @@ resource "azurerm_role_assignment" "storage_account_blob_owner_current_user" {
   description          = "Temporary role assignment. Delete this assignment if unsure why it is still existing."
   principal_id         = local.init_access_azure_principal_id
   role_definition_name = "Storage Blob Data Owner"
-  scope                = azurerm_storage_account.this.id
+  scope                = split("/providers/", azurerm_storage_account.this.id)[0] # resource group id
 }

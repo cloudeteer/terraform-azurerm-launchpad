@@ -151,6 +151,7 @@ variable "name_overrides" {
     network_security_group         = optional(string)
     storage_account                = optional(string)
     storage_container              = optional(string)
+    storage_container_data         = optional(string)
     storage_private_endpoint       = optional(string)
     subnet                         = optional(string)
     user_assigned_identity         = optional(string)
@@ -248,10 +249,10 @@ variable "runner_github_environments" {
   description = "List of Github environments used by federal identity."
 }
 
-variable "runner_github_pat" {
+variable "runner_token" {
   type        = string
   sensitive   = true
-  description = "GitHub PAT that will be used to register GitHub Action Runner tokens"
+  description = "GitHub Actions runner join/registration token. Changing this value will force replacement of the runner state Azure Files share."
 }
 
 variable "runner_github_repo" {
@@ -268,6 +269,18 @@ variable "runner_public_ip_address" {
   type        = bool
   default     = false
   description = "Set the value of this variable to `true` if you want to allocate a public IP address to each instance within the Virtual Machine Scale Set. Enabling this option may be necessary to establish internet access when a direct connection to a HUB is currently unavailable."
+}
+
+variable "encryption_at_host_enabled" {
+  type        = bool
+  default     = true
+  description = <<-EOT
+    Toggle host-based encryption for the Virtual Machine Scale Set. Set to `true` to encrypt data end-to-end between the VM and the storage service.
+
+    **NOTE**: Requires the provider feature `Microsoft.Compute/EncryptionAtHost` to be enabled at the subscription level.
+
+    Refer to the [Azure host-based encryption guidance](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-enable-host-based-encryption-portal?tabs=azure-powershell) for further requirements and limitations.
+  EOT
 }
 
 variable "runner_user" {

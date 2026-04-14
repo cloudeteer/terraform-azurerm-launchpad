@@ -34,7 +34,7 @@ run "deploy_module" {
 
     # Do not create VM instance
     runner_vm_instances = 0
-    runner_github_pat   = ""
+    runner_token        = ""
     runner_github_repo  = "cloudeteer/terraform-azurerm-launchpad"
 
     # Make the storage_account deletable

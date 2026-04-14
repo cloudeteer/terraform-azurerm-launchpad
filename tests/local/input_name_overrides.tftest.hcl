@@ -29,10 +29,10 @@ run "should_succeed_without_key_vault_creation" {
       azurerm_linux_virtual_machine_scale_set.this,
       azurerm_network_security_group.this,
       azurerm_storage_account.this,
-      azurerm_storage_container.this,
+      azurerm_storage_container.tfstate,
       azurerm_private_endpoint.storage_account,
       azurerm_subnet.this,
-      azurerm_user_assigned_identity.this,
+      azurerm_user_assigned_identity.launchpad_deploy,
       azurerm_virtual_network.this,
       ] : one(resource[*].name) == "tftest"
     ])

@@ -16,7 +16,7 @@ module "example" {
   source = "../.."
 }
 
-variable "my_runner_github_pat" {
+variable "my_runner_token" {
   type    = string
   default = "github_pat_0000000000000000000000_00000000000000000000000000000000000000000000000000000000000"
 }

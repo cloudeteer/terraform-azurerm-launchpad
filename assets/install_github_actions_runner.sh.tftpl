@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -eu
+trap 'echo "ERROR: command failed at line $LINENO: $BASH_COMMAND" >&2' ERR
 
 # do no rerun on exists VM
 # shellcheck disable=SC2154
@@ -25,7 +26,7 @@ echo "${private_endpoint_key_vault_ip} ${key_vault_hostname}" >>/etc/hosts
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -yqq
 apt-get install -yqq curl jq unzip python3 python3-pip
-ln -s /usr/bin/python3 /usr/bin/python
+ln -sf /usr/bin/python3 /usr/bin/python
 
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
@@ -37,8 +38,6 @@ RUNNER_NAME=$(hostname)
 
 # Fill variables with Terraform templatefile()
 # shellcheck disable=SC2154
-GITHUB_PAT=${runner_github_pat}
-# shellcheck disable=SC2154
 RUNNER_ARCH=${runner_arch}
 # shellcheck disable=SC2154
 RUNNER_COUNT=${runner_count}
@@ -48,6 +47,131 @@ RUNNER_GITHUB_REPO=${runner_github_repo}
 RUNNER_VERSION=${runner_version}
 # shellcheck disable=SC2154
 RUNNER_USER=${runner_user}
+# shellcheck disable=SC2154
+RUNNER_TOKEN=${runner_token}
+# shellcheck disable=SC2154
+STORAGE_ACCOUNT_NAME=${storage_account_name}
+# shellcheck disable=SC2154
+RUNNER_STATE_CONTAINER_NAME=${runner_state_container_name}
+# shellcheck disable=SC2154
+RUNNER_STATE_PREFIX=${runner_state_prefix}
+# Client ID of the user-assigned managed identity (launchpad_data); required so az login does not pick system-assigned or another UAMI.
+# shellcheck disable=SC2154
+RUNNER_MANAGED_IDENTITY_CLIENT_ID="${managed_identity_client_id}"
+
+# Set up unprivileged user (needed before mounting with uid/gid)
+id "$RUNNER_USER" &>/dev/null || useradd --create-home --system \
+  --comment "GitHub actions runner unprivileged user" \
+  --home "/home/$RUNNER_USER" \
+  --shell /usr/sbin/nologin \
+  "$RUNNER_USER"
+
+RUNNER_LOCAL_BASE=/opt/actions-runner
+mkdir -p "$RUNNER_LOCAL_BASE"
+
+az_login() {
+  for retry in $(seq 1 20); do
+    if az login --identity --client-id "$RUNNER_MANAGED_IDENTITY_CLIENT_ID" --allow-no-subscriptions 1>/dev/null; then
+      return 0
+    fi
+    if [ "$retry" -eq 20 ]; then
+      echo "Failed to login to Azure using managed identity" >&2
+      return 1
+    fi
+    sleep 5
+  done
+}
+
+az_retry() {
+  local attempts=3
+  local delay_s=1
+
+  for retry in $(seq 1 "$attempts"); do
+    if "$@"; then
+      return 0
+    fi
+    if [ "$retry" -lt "$attempts" ]; then
+      sleep "$delay_s"
+    fi
+  done
+  return 1
+}
+
+blob_exists() {
+  local blob_name=$1
+  az_retry az storage blob exists \
+      --auth-mode login \
+      --account-name "$STORAGE_ACCOUNT_NAME" \
+      --container-name "$RUNNER_STATE_CONTAINER_NAME" \
+      --name "$blob_name" \
+      --query exists -o tsv
+}
+
+blob_download() {
+  local blob_name=$1
+  local dest=$2
+  az_retry az storage blob download \
+      --auth-mode login \
+      --account-name "$STORAGE_ACCOUNT_NAME" \
+      --container-name "$RUNNER_STATE_CONTAINER_NAME" \
+      --name "$blob_name" \
+      --file "$dest" \
+      --only-show-errors 1>/dev/null
+}
+
+blob_upload() {
+  local src=$1
+  local blob_name=$2
+  az_retry az storage blob upload \
+      --auth-mode login \
+      --account-name "$STORAGE_ACCOUNT_NAME" \
+      --container-name "$RUNNER_STATE_CONTAINER_NAME" \
+      --name "$blob_name" \
+      --file "$src" \
+      --overwrite true \
+      --only-show-errors 1>/dev/null
+}
+
+restore_runner_state() {
+  local blob_prefix=$1
+  local local_dir=$2
+
+  # If state exists (identified by .runner blob), all required files must exist.
+  if [ "$(blob_exists "$blob_prefix/.runner")" = "true" ]; then
+    for f in .runner .credentials .credentials_rsaparams .service svc.sh runsvc.sh; do
+      blob_download "$blob_prefix/$f" "$local_dir/$f"
+    done
+  fi
+
+  chown -R "$RUNNER_USER:$RUNNER_USER" "$local_dir"
+  for f in .runner .credentials .credentials_rsaparams .service; do
+    if [ -f "$local_dir/$f" ]; then
+      chmod 600 "$local_dir/$f"
+    fi
+  done
+  for f in svc.sh runsvc.sh; do
+    if [ -f "$local_dir/$f" ]; then
+      chmod 755 "$local_dir/$f"
+    fi
+  done
+}
+
+persist_runner_state() {
+  local local_dir=$1
+  local blob_prefix=$2
+
+  # Persisted state is expected to be complete; fail if any file is missing.
+  for f in .runner .credentials .credentials_rsaparams .service svc.sh runsvc.sh; do
+    if [ ! -f "$local_dir/$f" ]; then
+      echo "Required runner state file missing: $local_dir/$f" >&2
+      exit 1
+    fi
+  done
+
+  for f in .runner .credentials .credentials_rsaparams .service svc.sh runsvc.sh; do
+    blob_upload "$local_dir/$f" "$blob_prefix/$f"
+  done
+}
 
 # Install hcl2json
 curl -L -o hcl2json "https://github.com/tmccombs/hcl2json/releases/latest/download/hcl2json_linux_$RUNNER_ARCH"
@@ -62,58 +186,76 @@ if [ "$RUNNER_VERSION" = "latest" ]; then
   RUNNER_VERSION=$${RUNNER_VERSION#v}
 fi
 
-# Register new runner token (with GITHUB_PAT)
-RUNNER_TOKEN=$(curl -sS --fail -L \
-  -X POST \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer $GITHUB_PAT" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  "https://api.github.com/repos/$RUNNER_GITHUB_REPO/actions/runners/registration-token" | jq -r ".token")
-
-# Set up unprivileged user
-id "$RUNNER_USER" &>/dev/null || useradd --create-home --system \
-  --comment "GitHub actions runner unprivileged user" \
-  --home "/home/$RUNNER_USER" \
-  --shell /usr/sbin/nologin \
-  "$RUNNER_USER"
-
 # Add GitHub SSH host keys to known hosts
 sudo -u "$RUNNER_USER" -- mkdir -p /home/$RUNNER_USER/.ssh
 sudo -u "$RUNNER_USER" -- ssh-keyscan -t rsa github.com | sudo -u "$RUNNER_USER" -- tee -a "/home/$RUNNER_USER/.ssh/known_hosts"
 
-# Create base install directory
-mkdir -p /opt/actions-runner
-cd /opt/actions-runner
+az_login
+
+cd "$RUNNER_LOCAL_BASE"
 
 # Download the latest runner package
 curl -sS --fail -L -o "actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz" \
   "https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz"
 
 for i in $(seq 1 "$RUNNER_COUNT"); do
-  current_dir=$PWD
+  local_dir="$RUNNER_LOCAL_BASE/$i"
+  blob_prefix="$RUNNER_STATE_PREFIX/$RUNNER_NAME/$i"
 
-  mkdir -p "$i"
-  chown "$RUNNER_USER" "$i"
-  cd "$i"
+  mkdir -p "$local_dir" "/tmp/$i"
+  chown -R "$RUNNER_USER:$RUNNER_USER" "/tmp/$i" "$local_dir"
+  cd "$local_dir"
 
-  # Extract the installer
-  sudo -u "$RUNNER_USER" -- tar xzf "../actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz"
+  # Extract locally to keep runner binaries and execution off SMB.
+  if [ ! -f "./config.sh" ]; then
+    sudo -u "$RUNNER_USER" -- tar xzf "$RUNNER_LOCAL_BASE/actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz"
+  fi
+
+  restore_runner_state "$blob_prefix" "$local_dir"
 
   # Disable debug output while running 3rd party scripts
   set +x
 
-  # Configure the runner
-  sudo -u "$RUNNER_USER" -- ./config.sh --unattended --replace \
-    --url "https://github.com/$RUNNER_GITHUB_REPO" \
-    --token "$RUNNER_TOKEN" \
-    --name "$RUNNER_NAME-$i" \
-    --labels cdt-iac-launchpad
+  if [ -f ".credentials" ]; then
+    echo "Runner already configured (found .credentials), skipping config for $RUNNER_NAME-$i"
+  else
+    # Configure the runner
+    sudo -u "$RUNNER_USER" -- ./config.sh --unattended --replace \
+      --url "https://github.com/$RUNNER_GITHUB_REPO" \
+      --token "$RUNNER_TOKEN" \
+      --name "$RUNNER_NAME-$i" \
+      --labels cdt-iac-launchpad \
+      --work "/tmp/$i"
 
-  ./svc.sh install "$RUNNER_USER"
+  fi
+
+  # Reimages keep runner credentials on Azure Files but not host services.
+  # Ensure service exists and is running on every provisioning run.
+  SERVICE_NAME=$(head -n1 .service 2>/dev/null || true)
+  if [ -n "$SERVICE_NAME" ]; then
+    case "$SERVICE_NAME" in
+      *.service) ;;
+      *) SERVICE_NAME="$SERVICE_NAME.service" ;;
+    esac
+  fi
+
+  if [ ! -x "./svc.sh" ]; then
+    echo "Missing executable svc.sh in $local_dir" >&2
+    exit 1
+  fi
+
+  UNIT_PATH=""
+  if [ -n "$SERVICE_NAME" ]; then
+    UNIT_PATH="/etc/systemd/system/$SERVICE_NAME"
+  fi
+
+  if [ -z "$UNIT_PATH" ] || [ ! -f "$UNIT_PATH" ]; then
+    ./svc.sh install "$RUNNER_USER"
+  fi
+
   ./svc.sh start
 
-  # Enable debug output again
-  set -x
-  cd "$current_dir"
+  persist_runner_state "$local_dir" "$blob_prefix"
 
+  cd "$RUNNER_LOCAL_BASE"
 done

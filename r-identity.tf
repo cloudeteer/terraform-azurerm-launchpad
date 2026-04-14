@@ -5,10 +5,28 @@ locals {
       "id", var.name, "prd", local.location_short[var.location], var.name_suffix
     ]))
   )
+  user_assigned_identity_name_data = coalesce(
+    var.name_overrides.user_assigned_identity,
+    join("-", compact([
+      "id", var.name, "dataprd", local.location_short[var.location], var.name_suffix
+    ]))
+  )
 }
 
-resource "azurerm_user_assigned_identity" "this" {
+resource "azurerm_user_assigned_identity" "launchpad_deploy" {
   name                = local.user_assigned_identity_name
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  tags                = var.tags
+}
+
+moved {
+  from = azurerm_user_assigned_identity.this
+  to   = azurerm_user_assigned_identity.launchpad_deploy
+}
+
+resource "azurerm_user_assigned_identity" "launchpad_data" {
+  name                = local.user_assigned_identity_name_data
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
@@ -21,8 +39,8 @@ resource "azurerm_federated_identity_credential" "this" {
 
   audience            = ["api://AzureADTokenExchange"]
   issuer              = "https://token.actions.githubusercontent.com"
-  parent_id           = azurerm_user_assigned_identity.this.id
-  resource_group_name = azurerm_user_assigned_identity.this.resource_group_name
+  parent_id           = azurerm_user_assigned_identity.launchpad_deploy.id
+  resource_group_name = azurerm_user_assigned_identity.launchpad_deploy.resource_group_name
   subject             = "repo:${var.runner_github_repo}:environment:${each.value}"
 }
 
@@ -30,7 +48,7 @@ resource "azurerm_federated_identity_credential" "this" {
 resource "azurerm_role_assignment" "management_group_owner" {
   for_each = data.azurerm_management_group.managed_by_launchpad
 
-  principal_id         = azurerm_user_assigned_identity.this.principal_id
+  principal_id         = azurerm_user_assigned_identity.launchpad_deploy.principal_id
   role_definition_name = var.role_definition_name
   scope                = each.value.id
 }
@@ -38,7 +56,7 @@ resource "azurerm_role_assignment" "management_group_owner" {
 resource "azurerm_role_assignment" "subscription_owner" {
   for_each = data.azurerm_subscription.managed_by_launchpad
 
-  principal_id         = azurerm_user_assigned_identity.this.principal_id
+  principal_id         = azurerm_user_assigned_identity.launchpad_deploy.principal_id
   role_definition_name = var.role_definition_name
   scope                = each.value.id
 }
@@ -57,7 +75,13 @@ resource "azurerm_role_assignment" "resource_specific" {
   } : key => value if value != null } : {}
 
 
-  principal_id         = azurerm_user_assigned_identity.this.principal_id
+  principal_id         = azurerm_user_assigned_identity.launchpad_deploy.principal_id
   scope                = each.value.scope
   role_definition_name = each.value.role_definition_name
+}
+
+resource "azurerm_role_assignment" "vmss_runner_state_blob_contributor" {
+  principal_id         = azurerm_user_assigned_identity.launchpad_data.principal_id
+  role_definition_name = "Storage Blob Data Contributor"
+  scope                = azurerm_storage_container.runner_state.resource_manager_id
 }

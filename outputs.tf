@@ -1,6 +1,6 @@
 # tflint-ignore: terraform_naming_convention
 output "LAUNCHPAD_AZURE_CLIENT_ID" {
-  value       = azurerm_user_assigned_identity.this.client_id
+  value       = azurerm_user_assigned_identity.launchpad_deploy.client_id
   description = "The client ID of the Azure user identity assigned to the Launchpad."
 }
 
@@ -12,7 +12,7 @@ output "LAUNCHPAD_AZURE_STORAGE_ACCOUNT_NAME" {
 
 # tflint-ignore: terraform_naming_convention
 output "LAUNCHPAD_AZURE_TENANT_ID" {
-  value       = azurerm_user_assigned_identity.this.tenant_id
+  value       = azurerm_user_assigned_identity.launchpad_deploy.tenant_id
   description = "The tenant ID of the Azure user identity assigned to the Launchpad"
 }
 
@@ -32,7 +32,7 @@ output "network_security_group_name" {
 }
 
 output "principal_id" {
-  value       = azurerm_user_assigned_identity.this.principal_id
+  value       = azurerm_user_assigned_identity.launchpad_deploy.principal_id
   description = "The principal ID of the Azure user identity assigned to the Launchpad."
 }
 
