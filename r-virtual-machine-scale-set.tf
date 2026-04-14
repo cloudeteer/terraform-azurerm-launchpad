@@ -16,6 +16,8 @@ locals {
     runner_token       = var.runner_token
     runner_user        = var.runner_user
     runner_version     = var.runner_version
+
+    managed_identity_client_id = azurerm_user_assigned_identity.launchpad_data.client_id
   }))
 
   virtual_machine_scale_set_name = coalesce(
