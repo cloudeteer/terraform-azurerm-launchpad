@@ -173,6 +173,10 @@ persist_runner_state() {
   done
 }
 
+# Install hcl2json
+curl -L -o hcl2json "https://github.com/tmccombs/hcl2json/releases/latest/download/hcl2json_linux_$RUNNER_ARCH"
+install -m 0755 hcl2json /usr/local/bin/hcl2json
+
 # Get the latest version
 if [ "$RUNNER_VERSION" = "latest" ]; then
   RUNNER_VERSION=$(curl -sS -L \
