@@ -32,15 +32,15 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   resource_group_name = var.resource_group_name
   tags                = var.tags
 
-  computer_name_prefix = "vm-${var.name}"
-  admin_password       = random_password.virtual_machine_scale_set_admin_password.result
-  admin_username       = local.admin_username
-  upgrade_mode         = var.upgrade_mode
-  instances            = var.runner_vm_instances
+  computer_name_prefix       = "vm-${var.name}"
+  admin_password             = random_password.virtual_machine_scale_set_admin_password.result
+  admin_username             = local.admin_username
+  upgrade_mode               = var.upgrade_mode
+  instances                  = var.runner_vm_instances
+  encryption_at_host_enabled = var.encryption_at_host_enabled
 
   disable_password_authentication = false
   sku                             = "Standard_D2plds_v5"
-  encryption_at_host_enabled      = false
   extension_operations_enabled    = true
   extensions_time_budget          = "PT15M"
   provision_vm_agent              = true
