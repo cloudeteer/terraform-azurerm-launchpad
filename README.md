@@ -466,4 +466,8 @@ Description: The ID of the Azure Virtual Network (VNet) associated with the Laun
 ### <a name="output_virtual_network_name"></a> [virtual\_network\_name](#output\_virtual\_network\_name)
 
 Description: The name of the Azure Virtual Network (VNet) associated with the Launchpad. If `var.subnet_id` is not specified, the name of the Virtual Network created by this module is returned. Otherwise, the name is extracted from the specified `var.subnet_id`.
+
+### <a name="output_vm_scaleset_id"></a> [vm\_scaleset\_id](#output\_vm\_scaleset\_id)
+
+Description: The name of the Azure Virtual Machine Scaleset associated with the Launchpad.
 <!-- END_TF_DOCS -->
