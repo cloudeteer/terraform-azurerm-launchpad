@@ -529,6 +529,10 @@ Description: The ID of the subnet within the Virtual Network associated with the
 
 Description: The name of the subnet within the Virtual Network associated with the Launchpad. If `var.subnet_id` is not specified, the name of the subnet created by this module is returned. Otherwise, the name is extracted from the specified `var.subnet_id`.
 
+### <a name="output_virtual_machine_scale_set_id"></a> [virtual\_machine\_scale\_set\_id](#output\_virtual\_machine\_scale\_set\_id)
+
+Description: The ID of the Azure Virtual Machine Scaleset associated with the Launchpad.
+
 ### <a name="output_virtual_machine_scale_set_name"></a> [virtual\_machine\_scale\_set\_name](#output\_virtual\_machine\_scale\_set\_name)
 
 Description: The name of the Azure Linux Virtual Machine Scale Set resource
