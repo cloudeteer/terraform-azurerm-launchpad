@@ -87,6 +87,11 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     })
   }
 
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.launchpad_data.id]
+  }
+
   network_interface {
     name    = "primary"
     primary = true
