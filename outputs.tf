@@ -63,5 +63,5 @@ output "virtual_network_name" {
 }
 output "vm_scaleset_id" {
   value       = azurerm_linux_virtual_machine_scale_set.this.id
-  description = "The name of the Azure Virtual Machine Scaleset associated with the Launchpad."
+  description = "The ID of the Azure Virtual Machine Scaleset associated with the Launchpad."
 }
