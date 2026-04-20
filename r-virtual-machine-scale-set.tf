@@ -13,11 +13,15 @@ locals {
     runner_arch        = var.runner_arch
     runner_count       = var.runner_count
     runner_github_repo = var.runner_github_repo
+    runner_name_prefix = var.name
     runner_token       = var.runner_token
     runner_user        = var.runner_user
     runner_version     = var.runner_version
 
     managed_identity_client_id = azurerm_user_assigned_identity.launchpad_data.client_id
+    vmss_name                  = local.virtual_machine_scale_set_name
+    vmss_resource_group_name   = var.resource_group_name
+    subscription_id            = data.azurerm_client_config.current.subscription_id
   }))
 
   virtual_machine_scale_set_name = coalesce(

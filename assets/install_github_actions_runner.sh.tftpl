@@ -34,7 +34,7 @@ curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 # Install Azure AKS CLI (kubelogin)
 sudo az aks install-cli
 
-RUNNER_NAME=$(hostname)
+RUNNER_HOSTNAME=$(hostname)
 
 # Fill variables with Terraform templatefile()
 # shellcheck disable=SC2154
@@ -43,6 +43,8 @@ RUNNER_ARCH=${runner_arch}
 RUNNER_COUNT=${runner_count}
 # shellcheck disable=SC2154
 RUNNER_GITHUB_REPO=${runner_github_repo}
+# shellcheck disable=SC2154
+RUNNER_NAME_PREFIX=${runner_name_prefix}
 # shellcheck disable=SC2154
 RUNNER_VERSION=${runner_version}
 # shellcheck disable=SC2154
@@ -58,6 +60,12 @@ RUNNER_STATE_PREFIX=${runner_state_prefix}
 # Client ID of the user-assigned managed identity (launchpad_data); required so az login does not pick system-assigned or another UAMI.
 # shellcheck disable=SC2154
 RUNNER_MANAGED_IDENTITY_CLIENT_ID="${managed_identity_client_id}"
+# shellcheck disable=SC2154
+VMSS_NAME="${vmss_name}"
+# shellcheck disable=SC2154
+VMSS_RESOURCE_GROUP_NAME="${vmss_resource_group_name}"
+# shellcheck disable=SC2154
+SUBSCRIPTION_ID="${subscription_id}"
 
 # Set up unprivileged user (needed before mounting with uid/gid)
 id "$RUNNER_USER" &>/dev/null || useradd --create-home --system \
@@ -94,6 +102,36 @@ az_retry() {
       sleep "$delay_s"
     fi
   done
+  return 1
+}
+
+compute_node_slot() {
+  local vmss_hostnames
+  local sorted_hostnames
+  local idx=1
+
+  vmss_hostnames="$(az_retry az vmss list-instances \
+      --subscription "$SUBSCRIPTION_ID" \
+      --resource-group "$VMSS_RESOURCE_GROUP_NAME" \
+      --name "$VMSS_NAME" \
+      --query "[].osProfile.computerName" \
+      -o tsv)"
+
+  if [ -z "$vmss_hostnames" ]; then
+    echo "No VMSS hostnames returned for $VMSS_RESOURCE_GROUP_NAME/$VMSS_NAME" >&2
+    return 1
+  fi
+
+  sorted_hostnames="$(printf "%s\n" "$vmss_hostnames" | awk 'NF' | sort)"
+  while IFS= read -r vm_name; do
+    if [ "$vm_name" = "$RUNNER_HOSTNAME" ]; then
+      echo "$idx"
+      return 0
+    fi
+    idx=$((idx + 1))
+  done <<<"$sorted_hostnames"
+
+  echo "Current hostname $RUNNER_HOSTNAME not found in VMSS instance list" >&2
   return 1
 }
 
@@ -192,6 +230,9 @@ sudo -u "$RUNNER_USER" -- ssh-keyscan -t rsa github.com | sudo -u "$RUNNER_USER"
 
 az_login
 
+NODE_SLOT="$(compute_node_slot)"
+RUNNER_NODE_NAME="$RUNNER_NAME_PREFIX$NODE_SLOT"
+
 cd "$RUNNER_LOCAL_BASE"
 
 # Download the latest runner package
@@ -200,7 +241,7 @@ curl -sS --fail -L -o "actions-runner-linux-$RUNNER_ARCH-$RUNNER_VERSION.tar.gz"
 
 for i in $(seq 1 "$RUNNER_COUNT"); do
   local_dir="$RUNNER_LOCAL_BASE/$i"
-  blob_prefix="$RUNNER_STATE_PREFIX/$RUNNER_NAME/$i"
+  blob_prefix="$RUNNER_STATE_PREFIX/slot-$NODE_SLOT/$i"
 
   mkdir -p "$local_dir" "/tmp/$i"
   chown -R "$RUNNER_USER:$RUNNER_USER" "/tmp/$i" "$local_dir"
@@ -217,13 +258,13 @@ for i in $(seq 1 "$RUNNER_COUNT"); do
   set +x
 
   if [ -f ".credentials" ]; then
-    echo "Runner already configured (found .credentials), skipping config for $RUNNER_NAME-$i"
+    echo "Runner already configured (found .credentials), skipping config for $RUNNER_NODE_NAME-$i"
   else
     # Configure the runner
     sudo -u "$RUNNER_USER" -- ./config.sh --unattended --replace \
       --url "https://github.com/$RUNNER_GITHUB_REPO" \
       --token "$RUNNER_TOKEN" \
-      --name "$RUNNER_NAME-$i" \
+      --name "$RUNNER_NODE_NAME-$i" \
       --labels cdt-iac-launchpad \
       --work "/tmp/$i"
 
