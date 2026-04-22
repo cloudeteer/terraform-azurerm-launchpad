@@ -85,3 +85,9 @@ resource "azurerm_role_assignment" "vmss_runner_state_blob_contributor" {
   role_definition_name = "Storage Blob Data Contributor"
   scope                = azurerm_storage_container.runner_state.resource_manager_id
 }
+
+resource "azurerm_role_assignment" "vmss_runner_reader" {
+  principal_id         = azurerm_user_assigned_identity.launchpad_data.principal_id
+  role_definition_name = "Reader"
+  scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
+}
