@@ -249,7 +249,7 @@ variable "runner_github_environments" {
   description = "List of Github environments used by federal identity."
 }
 
-.variable "runner_github_owner_id" {
+variable "runner_github_owner_id" {
   type        = string
   default     = null
   description = "Numeric GitHub owner ID. When set together with `runner_github_repository_id`, included in the federated credential subject only."
