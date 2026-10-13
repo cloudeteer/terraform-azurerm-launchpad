@@ -1,4 +1,6 @@
 locals {
+  runner_github_repo_subject = var.runner_github_owner_id == null ? var.runner_github_repo : "${split("/", var.runner_github_repo)[0]}@${var.runner_github_owner_id}/${split("/", var.runner_github_repo)[1]}@${var.runner_github_repository_id}"
+
   user_assigned_identity_name = coalesce(
     var.name_overrides.user_assigned_identity,
     join("-", compact([
@@ -41,7 +43,7 @@ resource "azurerm_federated_identity_credential" "this" {
   issuer              = "https://token.actions.githubusercontent.com"
   parent_id           = azurerm_user_assigned_identity.launchpad_deploy.id
   resource_group_name = azurerm_user_assigned_identity.launchpad_deploy.resource_group_name
-  subject             = "repo:${var.runner_github_repo}:environment:${each.value}"
+  subject             = "repo:${local.runner_github_repo_subject}:environment:${each.value}"
 }
 
 
