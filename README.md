@@ -383,6 +383,22 @@ Default:
 }
 ```
 
+### <a name="input_runner_github_owner_id"></a> [runner\_github\_owner\_id](#input\_runner\_github\_owner\_id)
+
+Description: Numeric GitHub owner ID. Set either both this and `runner_github_repository_id`, or neither of them. When set, included in the federated credential subject only.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_runner_github_repository_id"></a> [runner\_github\_repository\_id](#input\_runner\_github\_repository\_id)
+
+Description: Numeric GitHub repository ID. Set either both this and `runner_github_owner_id`, or neither of them. When set, included in the federated credential subject only.
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_runner_public_ip_address"></a> [runner\_public\_ip\_address](#input\_runner\_public\_ip\_address)
 
 Description: Set the value of this variable to `true` if you want to allocate a public IP address to each instance within the Virtual Machine Scale Set. Enabling this option may be necessary to establish internet access when a direct connection to a HUB is currently unavailable.
