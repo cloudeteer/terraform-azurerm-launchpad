@@ -385,7 +385,7 @@ Default:
 
 ### <a name="input_runner_github_owner_id"></a> [runner\_github\_owner\_id](#input\_runner\_github\_owner\_id)
 
-Description: Numeric GitHub owner ID. When set together with `runner_github_repository_id`, included in the federated credential subject only.
+Description: Numeric GitHub owner ID. Set either both this and `runner_github_repository_id`, or neither of them. When set, included in the federated credential subject only.
 
 Type: `string`
 
@@ -393,7 +393,7 @@ Default: `null`
 
 ### <a name="input_runner_github_repository_id"></a> [runner\_github\_repository\_id](#input\_runner\_github\_repository\_id)
 
-Description: Numeric GitHub repository ID. When set together with `runner_github_owner_id`, included in the federated credential subject only.
+Description: Numeric GitHub repository ID. Set either both this and `runner_github_owner_id`, or neither of them. When set, included in the federated credential subject only.
 
 Type: `string`
 

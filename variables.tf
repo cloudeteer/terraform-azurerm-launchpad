@@ -252,11 +252,15 @@ variable "runner_github_environments" {
 variable "runner_github_owner_id" {
   type        = string
   default     = null
-  description = "Numeric GitHub owner ID. When set together with `runner_github_repository_id`, included in the federated credential subject only."
+  description = "Numeric GitHub owner ID. Set either both this and `runner_github_repository_id`, or neither of them. When set, included in the federated credential subject only."
 
   validation {
-    condition     = (var.runner_github_owner_id == null) == (var.runner_github_repository_id == null)
-    error_message = "Set runner_github_owner_id and runner_github_repository_id together."
+    condition = (
+      var.runner_github_owner_id == null && var.runner_github_repository_id == null
+      ) || (
+      var.runner_github_owner_id != null && var.runner_github_repository_id != null
+    )
+    error_message = "Set either both runner_github_owner_id and runner_github_repository_id, or neither of them."
   }
 }
 
@@ -279,7 +283,7 @@ variable "runner_github_repo" {
 variable "runner_github_repository_id" {
   type        = string
   default     = null
-  description = "Numeric GitHub repository ID. When set together with `runner_github_owner_id`, included in the federated credential subject only."
+  description = "Numeric GitHub repository ID. Set either both this and `runner_github_owner_id`, or neither of them. When set, included in the federated credential subject only."
 }
 
 variable "runner_public_ip_address" {
